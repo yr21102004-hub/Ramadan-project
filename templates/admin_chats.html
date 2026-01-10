@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding" style="margin-top: 80px;">
+    <div class="container">
+        <h2 class="section-title text-center text-gold">سجل المحادثات الذكية</h2>
+        <div class="divider center-divider"></div>
+
+        <div class="admin-dashboard">
+            <div class="card" style="margin-bottom: 20px;">
+                {% if chats|length == 0 %}
+                <p class="text-center">لا توجد محادثات مسجلة حتى الآن.</p>
+                {% else %}
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; min-width: 600px;">
+                        <thead>
+                            <tr
+                                style="background-color: var(--surface-light); border-bottom: 2px solid var(--primary);">
+                                <th style="padding: 15px; text-align: right;">الوقت</th>
+                                <th style="padding: 15px; text-align: right;">المستخدم</th>
+                                <th style="padding: 15px; text-align: right;">رسالة العميل</th>
+                                <th style="padding: 15px; text-align: right;">رد الـ AI</th>
+                                <th style="padding: 15px; text-align: right;">IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for chat in chats %}
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 15px;">{{ chat.timestamp }}</td>
+                                <td style="padding: 15px;">
+                                    {% if chat.username %}
+                                    <span class="text-gold">{{ chat.user_name }}</span>
+                                    <br><small class="text-muted-dynamic">({{ chat.username }})</small>
+                                    {% else %}
+                                    <span class="text-muted-dynamic">زائر</span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 15px; max-width: 300px;">{{ chat.message }}</td>
+                                <td style="padding: 15px; max-width: 300px; color: var(--text-muted);">{{ chat.response
+                                    }}</td>
+                                <td style="padding: 15px;">{{ chat.user_ip }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="text-center" style="margin-top: 30px;">
+                <a href="{{ url_for('admin') }}" class="btn btn-primary">عودة للوحة التحكم</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

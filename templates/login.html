@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding" style="margin-top: 80px; min-height: 60vh; display: flex; align-items: center;">
+    <div class="container">
+        <div
+            style="max-width: 400px; margin: 0 auto; background: #1E1E1E; padding: 40px; border-radius: 15px; border: 1px solid #333;">
+            <h2 class="text-center" style="margin-bottom: 30px; color: #D4AF37;">تسجيل الدخول</h2>
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+            <div
+                style="background: rgba(255, 0, 0, 0.2); color: #ff6b6b; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label>اسم المستخدم</label>
+                    <input type="text" name="username" required
+                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px;">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" name="password" required
+                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px;">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;">دخول</button>
+            </form>
+
+            <div style="margin-top: 20px; text-align: center; color: #aaa; font-size: 0.9rem;">
+                ليس لديك حساب؟ <a href="{{ url_for('register') }}" style="color: #D4AF37;">سجل الآن</a>
+                <br><br>
+                <a href="{{ url_for('forgot_password') }}" style="color: var(--text-muted); font-size: 0.85rem;">هل نسيت
+                    كلمة المرور؟</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

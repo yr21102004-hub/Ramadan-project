@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+
+
+{% block content %}
+<!-- Contact -->
+<section class="contact section-padding bg-darker" style="margin-top: 80px;">
+    <div class="container">
+        <div class="contact-wrapper">
+            <div class="contact-info">
+                <h2 class="section-title">تواصل معنا</h2>
+                <p>اتصل بنا الآن واحصل على تشطيب يعكس ذوقك الرفيع.</p>
+
+                <div class="info-item">
+                    <i class="fas fa-user-tie"></i>
+                    <div>
+                        <h4>المدير العام</h4>
+                        <p>رمضان محمد جبر</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-phone-alt"></i>
+                    <div>
+                        <h4>الموبايل</h4>
+                        <p><a href="tel:01129276218" style="direction: ltr; display: inline-block;">01129276218</a>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fab fa-whatsapp"></i>
+                    <div>
+                        <h4>واتساب</h4>
+                        <p><a href="https://wa.me/201099155572"
+                                style="direction: ltr; display: inline-block;">01099155572</a></p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <h4>البريد الإلكتروني</h4>
+                        <p><a href="mailto:ramadangaber01@gmail.com">ramadangaber01@gmail.com</a></p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <h4>مواعيد العمل</h4>
+                        <p>من 9 صباحاً إلى 5 مساءً</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-form-container">
+                <form class="contact-form" onsubmit="submitContactForm(); return false;">
+                    <div class="form-group">
+                        <label>الاسم</label>
+                        <input type="text" id="name" placeholder="اكتب اسمك هنا" required>
+                    </div>
+                    <div class="form-group">
+                        <label>رقم الهاتف</label>
+                        <input type="tel" id="phone" placeholder="رقم هاتفك" pattern="[0-9]{11}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الرسالة</label>
+                        <!-- CSRF removed for simplicity in this version -->
+                        <textarea id="message" rows="4" placeholder="كيف يمكننا مساعدتك؟" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">ارسال الرسالة</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

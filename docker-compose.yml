@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - data_volume:/app/database_data # Persistent DB
+      - uploads_volume:/app/uploads # Persistent Uploads
+      - logs_volume:/app/logs # Persistent Logs (Security/Audit)
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - FLASK_ENV=production
+    # Security: Drop all capabilities and only add needed ones (if any)
+    cap_drop:
+      - ALL
+    # Security: Read-only root filesystem
+    read_only: true
+    # Security: Prevent privilege escalation
+    security_opt:
+      - no-new-privileges:true
+    # Health Check for Canary/Orchestration
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Tmpfs for temporary files (needed because of read_only root)
+    tmpfs:
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+    restart: always
+
+volumes:
+  data_volume:
+  uploads_volume:
+  logs_volume:

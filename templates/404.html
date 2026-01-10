@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding"
+    style="margin-top: 80px; min-height: 60vh; display: flex; align-items: center; text-align: center;">
+    <div class="container">
+        <h1 style="font-size: 6rem; color: #D4AF37;">404</h1>
+        <h2 style="color: #fff; margin-bottom: 20px;">الصفحة غير موجودة</h2>
+        <p style="color: #aaa; margin-bottom: 30px;">يبدو أنك ضللت الطريق. الصفحة التي تبحث عنها غير متاحة.</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">عودة للرئيسية</a>
+    </div>
+</section>
+{% endblock %}

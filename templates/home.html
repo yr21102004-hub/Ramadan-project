@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<header class="hero">
+    <div class="hero-overlay"></div>
+    <div class="container hero-content">
+        <span class="eyebrow fade-in-up">مرحباً بكم في رمضان محمد جبر</span>
+        <h1 class="fade-in-up delay-1">أنت تتخيل.. <br>ونحن <span class="text-gold">نبدع في التنفيذ.</span></h1>
+        <p class="fade-in-up delay-2">دقة في الأداء، رقي في الذوق، والتزام تام بالمواعيد.</p>
+        <div class="hero-buttons fade-in-up delay-3">
+            <a href="{{ url_for('contact') }}" class="btn btn-primary">اطلب معاينة مجانية</a>
+            <a href="{{ url_for('projects') }}" class="btn btn-outline">سابق أعمالنا</a>
+        </div>
+    </div>
+</header>
+
+<!-- About Teaser -->
+<section class="section-padding">
+    <div class="container text-center">
+        <h2 class="section-title">من نحن</h2>
+        <div class="divider center-divider"></div>
+        <p style="max-width: 700px; margin: 0 auto; font-size: 1.2rem; margin-bottom: 30px;" class="text-muted-dynamic">
+            رمضان محمد جبر للدهانات والديكورات، خبرة لأكثر من 30 عاماً في مجال التشطيبات والديكور.
+            نحول وحدتك السكنية أو التجارية إلى تحفة فنية بأيدي أمهر الفنيين وأجود الخامات.
+        </p>
+        <a href="{{ url_for('about') }}" class="btn btn-outline">اكتشف المزيد عنا</a>
+    </div>
+</section>
+
+<!-- Services Teaser -->
+<section class="section-padding bg-darker">
+    <div class="container">
+        <h2 class="section-title text-center">خدماتنا المتميزة</h2>
+        <div class="divider center-divider"></div>
+        <div class="services-grid" style="margin-bottom: 40px;">
+            <a href="{{ url_for('service_detail', service_id='modern-paints') }}" class="service-card-link"
+                style="text-decoration: none; color: inherit;">
+                <div class="service-card">
+                    <i class="fas fa-paint-roller service-icon"></i>
+                    <h3>دهانات حديثة</h3>
+                    <p>أحدث ألوان الدهانات الديكورية والكمبيوتر.</p>
+                </div>
+            </a>
+            <a href="{{ url_for('service_detail', service_id='gypsum-board') }}" class="service-card-link"
+                style="text-decoration: none; color: inherit;">
+                <div class="service-card">
+                    <i class="fas fa-drafting-compass service-icon"></i>
+                    <h3>جبس بورد</h3>
+                    <p>أسقف معلقة وبيت نور بتصميمات عصرية.</p>
+                </div>
+            </a>
+            <a href="{{ url_for('service_detail', service_id='integrated-finishing') }}" class="service-card-link"
+                style="text-decoration: none; color: inherit;">
+                <div class="service-card">
+                    <i class="fas fa-hammer service-icon"></i>
+                    <h3>تشطيب متكامل</h3>
+                    <p>تسليم مفتاح من الطوب الأحمر وحتى الفرش.</p>
+                </div>
+            </a>
+        </div>
+        <div class="text-center">
+            <a href="{{ url_for('services') }}" class="btn btn-primary">عرض كل الخدمات</a>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

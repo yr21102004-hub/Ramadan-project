@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding" style="margin-top: 80px;">
+    <div class="container">
+        <div class="contact-form" style="max-width: 500px; margin: 0 auto;">
+            <h3 class="text-center text-gold">إعداد المصادقة الثنائية (2FA)</h3>
+            <p class="text-center text-muted-dynamic">امسح كود QR باستخدام Google Authenticator</p>
+
+            <div style="text-align: center; margin: 20px 0;">
+                <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code"
+                    style="border: 5px solid white; border-radius: 10px;">
+                <p style="margin-top: 10px; color: #aaa; font-family: monospace;">Secret: {{ secret }}</p>
+            </div>
+
+            <form action="{{ url_for('setup_2fa') }}" method="POST">
+                
+                <input type="hidden" name="secret" value="{{ secret }}">
+
+                <div class="form-group">
+                    <label>أدخل الكود من التطبيق لتأكيد التفعيل</label>
+                    <input type="text" name="token" required placeholder="123456"
+                        style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">تفعيل الحماية</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

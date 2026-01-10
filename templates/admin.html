@@ -1,0 +1,394 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    .log-high {
+        background: rgba(255, 0, 0, 0.1) !important;
+    }
+
+    .text-high {
+        color: #ff4a4a !important;
+    }
+
+    .text-normal {
+        color: #D4AF37 !important;
+    }
+
+    .ctx-box {
+        display: none;
+        background: #121212;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #333;
+    }
+</style>
+
+<section class="section-padding" style="margin-top: 80px;">
+    <div class="container">
+        <h2 class="section-title text-center">لوحة تحكم المسؤول</h2>
+        <div class="divider center-divider"></div>
+
+        <!-- AI Learning (Unanswered Questions) -->
+        <div class="row" style="margin-top: 40px;">
+            <div style="flex: 1; min-width: 100%; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 20px; color: #4CAF50; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                    <i class="fas fa-brain"></i> أسئلة لم يفهمها الـ AI (تعليم الذكاء الاصطناعي)
+                </h3>
+                <div style="background: #1E1E1E; padding: 20px; border-radius: 10px;">
+                    {% if unanswered %}
+                    <table style="width: 100%; border-collapse: collapse; color: #ddd;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #444;">
+                                <th style="padding: 10px; text-align: right;">السؤال (السياق)</th>
+                                <th style="padding: 10px; text-align: right;">الإجابة (ضع ردك هنا)</th>
+                                <th style="padding: 10px; text-align: right;">التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for uq in unanswered %}
+                            <tr style="border-bottom: 1px solid #333;">
+                                <td style="padding: 10px; width: 40%;">
+                                    <div style="color: #D4AF37; font-weight: bold; margin-bottom: 5px;">{{ uq.question
+                                        }}</div>
+
+                                    <!-- Context Toggle -->
+                                    <button onclick="toggleContext('ctx-{{ loop.index }}')"
+                                        style="background: #333; border: 1px solid #444; color: #4aa3ff; cursor: pointer; font-size: 0.8rem; padding: 5px 10px; border-radius: 4px;">
+                                        <i class="fas fa-history"></i> عرض المحادثة بالكامل
+                                    </button>
+
+                                    <div id="ctx-{{ loop.index }}" class="ctx-box">
+                                        {% set history = get_context(uq.user_id, uq.timestamp) %}
+                                        {% if history %}
+                                        <p
+                                            style="font-size: 0.75rem; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
+                                            المستخدم: {{ history[0].user_name }} (ID: {{ uq.user_id[:8] }}...)
+                                        </p>
+                                        {% for h in history %}
+                                        <div
+                                            style="margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 5px;">
+                                            <div style="font-size: 0.75rem; color: #777;">{{ h.timestamp }}</div>
+                                            <div style="font-size: 0.85rem;"><span style="color: #4aa3ff;">العضو:</span>
+                                                {{ h.message }}</div>
+                                            <div style="font-size: 0.85rem;"><span style="color: #4CAF50;">البوت:</span>
+                                                {{ h.response }}</div>
+                                        </div>
+                                        {% endfor %}
+                                        {% else %}
+                                        <div style="font-size: 0.8rem; color: #777;">لا يوجد سجل محادثة متاح (ربما تم
+                                            تغيير الهوية).</div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td style="padding: 10px;">
+                                    <form action="{{ url_for('answer_question') }}" method="POST"
+                                        style="display: flex; gap: 10px;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="question" value="{{ uq.question }}">
+                                        <input type="text" name="answer" value="{{ uq.admin_response or '' }}"
+                                            placeholder="اكتب الإجابة هنا..."
+                                            style="flex: 1; padding: 8px; background: #222; border: 1px solid #444; color: white; border-radius: 5px;">
+                                        <button type="submit" class="btn btn-primary"
+                                            style="padding: 8px 15px;">حفظ</button>
+                                    </form>
+                                    {% if uq.admin_response %}
+                                    <small style="color: #4CAF50;"><i class="fas fa-check-circle"></i> تم التعليم
+                                        بنجاح</small>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 10px; font-size: 0.8rem; color: #777;">{{ uq.timestamp }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p style="text-align: center; color: #777;">جميع الأسئلة مفهومة حالياً!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="display: flex; gap: 40px; flex-wrap: wrap;">
+            <!-- Message Inbox (Contact Form) -->
+            <div style="flex: 1; min-width: 500px; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 20px; color: #D4AF37; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                    <i class="fas fa-envelope"></i> رسائل الزوار (اتصل بنا)
+                </h3>
+                <div
+                    style="background: #1E1E1E; padding: 20px; border-radius: 10px; max-height: 400px; overflow-y: auto;">
+                    {% if messages %}
+                    <table style="width: 100%; border-collapse: collapse; color: #ddd;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #444;">
+                                <th style="padding: 10px; text-align: right;">الاسم</th>
+                                <th style="padding: 10px; text-align: right;">الهاتف</th>
+                                <th style="padding: 10px; text-align: right;">التاريخ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for msg in messages %}
+                            <tr style="border-bottom: 1px solid #333;">
+                                <td style="padding: 10px;">
+                                    <strong>{{ msg.name }}</strong><br>
+                                    <small style="color: #fff;">{{ msg.message }}</small>
+                                </td>
+                                <td style="padding: 10px;">{{ msg.phone }}</td>
+                                <td style="padding: 10px; font-size: 0.85rem; color: #aaa;">{{ msg.created_at[:10] }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p style="text-align: center; color: #777;">لا توجد رسائل جديدة.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Recent Chat Logs -->
+            <div style="flex: 1; min-width: 500px; margin-bottom: 30px;">
+                <h3 style="margin-bottom: 20px; color: #4aa3ff; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                    <i class="fas fa-comments"></i> آخر محادثات الـ AI
+                </h3>
+                <div
+                    style="background: #1E1E1E; padding: 20px; border-radius: 10px; max-height: 400px; overflow-y: auto;">
+                    {% if chats %}
+                    <table style="width: 100%; border-collapse: collapse; color: #ddd;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #444;">
+                                <th style="padding: 10px; text-align: right;">المستخدم</th>
+                                <th style="padding: 10px; text-align: right;">المحادثة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for chat in chats %}
+                            <tr style="border-bottom: 1px solid #333;">
+                                <td style="padding: 10px;">
+                                    <strong>{{ chat.user_name }}</strong><br>
+                                    <small style="color: #777;">{{ chat.timestamp }}</small>
+                                </td>
+                                <td style="padding: 10px;">
+                                    <div style="font-size: 0.9rem;"><span style="color: #4aa3ff;">سؤال:</span> {{
+                                        chat.message }}</div>
+                                    <div style="font-size: 0.9rem;"><span style="color: #4CAF50;">رد الـ AI:</span> {{
+                                        chat.response }}</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p style="text-align: center; color: #777;">لا توجد محادثات مسجلة.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Autonomous Security Monitor -->
+            <div class="row" style="margin-top: 40px; width: 100%;">
+                <div style="flex: 1; min-width: 100%; margin-bottom: 30px;">
+                    <h3
+                        style="margin-bottom: 20px; color: #ff4a4a; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                        <i class="fas fa-shield-virus"></i> مراقب الأمان الذكي (Security Audit Logs)
+                    </h3>
+                    <div
+                        style="background: #1E1E1E; padding: 20px; border-radius: 10px; max-height: 300px; overflow-y: auto;">
+                        {% if security_logs %}
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; color: #ddd;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid #444; color: #ff4a4a;">
+                                    <th style="padding: 10px; text-align: right;">الحدث</th>
+                                    <th style="padding: 10px; text-align: right;">التفاصيل</th>
+                                    <th style="padding: 10px; text-align: right;">IP</th>
+                                    <th style="padding: 10px; text-align: right;">التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in security_logs %}
+                                <tr style="border-bottom: 1px solid #333;"
+                                    class="{{ 'log-high' if log.severity == 'high' else '' }}">
+                                    <td style="padding: 10px;">
+                                        <span class="{{ 'text-high' if log.severity == 'high' else 'text-normal' }}">
+                                            {{ log.event }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 10px;">{{ log.details }}</td>
+                                    <td style="padding: 10px; color: #aaa;">{{ log.ip }}</td>
+                                    <td style="padding: 10px; font-size: 0.8rem; color: #777;">{{ log.timestamp }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <p style="text-align: center; color: #777;">النظام آمن ومستقر، لا توجد تهديدات مسجلة.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Payment Notifications -->
+                <div style="flex: 1; min-width: 100%; margin-bottom: 30px;">
+                    <h3
+                        style="margin-bottom: 20px; color: #4facfe; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                        <i class="fas fa-money-bill-wave"></i> إشعارات الدفع المستلمة
+                    </h3>
+                    <div
+                        style="background: #1E1E1E; padding: 20px; border-radius: 10px; max-height: 300px; overflow-y: auto;">
+                        {% if payments %}
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; color: #ddd;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid #444; color: #4facfe;">
+                                    <th style="padding: 10px; text-align: right;">العميل</th>
+                                    <th style="padding: 10px; text-align: right;">المبلغ</th>
+                                    <th style="padding: 10px; text-align: right;">الطريقة</th>
+                                    <th style="padding: 10px; text-align: right;">الحالة</th>
+                                    <th style="padding: 10px; text-align: right;">رقم العملية/الموبايل</th>
+                                    <th style="padding: 10px; text-align: right;">التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in payments %}
+                                <tr style="border-bottom: 1px solid #333;">
+                                    <td style="padding: 10px;">{{ p.full_name }} ({{ p.username }})</td>
+                                    <td style="padding: 10px; color: #4CAF50; font-weight: bold;">{{ p.amount }} ج.م
+                                    </td>
+                                    <td style="padding: 10px;">{{ 'محفظة' if p.method == 'wallet' else 'انستا باي' }}
+                                    </td>
+                                    <td style="padding: 10px;">
+                                        {% if 'success' in p.status %}
+                                        <span style="color: #4CAF50; font-weight: bold;">{{ p.status }}</span>
+                                        {% elif 'failed' in p.status %}
+                                        <span style="color: #ff4a4a; font-weight: bold;">{{ p.status }}</span>
+                                        {% else %}
+                                        <span>{{ p.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 10px; color: #D4AF37;">{{ p.transaction_id }}</td>
+                                    <td style="padding: 10px; font-size: 0.8rem; color: #777;">{{ p.timestamp }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <p style="text-align: center; color: #777;">لا توجد إشعارات دفع حالياً.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" style="display: flex; gap: 40px; flex-wrap: wrap; width: 100%;">
+                <!-- Add User Form -->
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="contact-form">
+                        <h3 style="margin-bottom: 20px;">إضافة عميل / مستخدم جديد</h3>
+                        <form action="{{ url_for('add_user') }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                            <div class="form-group">
+                                <label>اسم العميل</label>
+                                <input type="text" name="username" required placeholder="اسم المستخدم (للدخول)">
+                            </div>
+                            <div class="form-group">
+                                <label>الاسم بالكامل</label>
+                                <input type="text" name="full_name" required placeholder="الاسم الحقيقي">
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف</label>
+                                <input type="tel" name="phone" required placeholder="01xxxxxxxxx">
+                            </div>
+                            <div class="form-group">
+                                <label>العنوان / المشروع</label>
+                                <input type="text" name="project_location" placeholder="مثال: فيلا التجمع الخامس">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">إضافة المستخدم</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- User List -->
+                <div style="flex: 1; min-width: 300px;">
+                    <h3 style="margin-bottom: 20px;">قائمة العملاء ومشاريعهم</h3>
+                    <div style="background: #1E1E1E; padding: 20px; border-radius: 10px;">
+                        {% if users %}
+                        <ul style="list-style: none; padding: 0;">
+                            {% for user in users %}
+                            <li
+                                style="background: #121212; padding: 20px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
+                                    <div style="flex: 1; min-width: 250px;">
+                                        <h4 style="color: #D4AF37; margin: 0; font-size: 1.2rem;">{{ user.full_name }}
+                                            <span style="font-size: 0.8rem; color: #777;">({{ user.username }})</span>
+                                        </h4>
+                                        <p style="font-size: 0.9rem; color: #ccc; margin: 10px 0;">
+                                            <strong>المشروع:</strong> {{ user.project_location or 'غير محدد' }}
+                                        </p>
+                                        <p style="font-size: 0.9rem; color: #ccc; margin: 5px 0;">
+                                            <strong>نسبة الإنجاز الحالية:</strong> <span
+                                                style="color: #4CAF50; font-weight: bold;">{{ user.project_percentage or
+                                                0
+                                                }}%</span>
+                                        </p>
+                                    </div>
+
+                                    <div style="flex: 1; min-width: 250px; margin-top: 10px;">
+                                        <!-- Progress Update Form -->
+                                        <form action="{{ url_for('update_project_percentage') }}" method="POST"
+                                            style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                            <input type="hidden" name="username" value="{{ user.username }}">
+                                            <input type="number" name="percentage" min="0" max="100"
+                                                value="{{ user.project_percentage or 0 }}"
+                                                style="width: 70px; padding: 5px; background: #222; border: 1px solid #444; color: white; border-radius: 4px;">
+                                            <button type="submit" class="btn btn-primary"
+                                                style="padding: 5px 15px; font-size: 0.8rem;">تحديث %</button>
+                                        </form>
+
+                                        <div style="display: flex; gap: 10px;">
+                                            <form action="{{ url_for('delete_user', username=user.username) }}"
+                                                method="POST" style="display:inline;"
+                                                onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟');">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                                <button type="submit" class="btn btn-primary"
+                                                    style="background: #a00; border: none; padding: 5px 15px; font-size: 0.8rem;">حذف</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p style="color: #aaa; text-align: center;">لا يوجد عملاء مضافين حالياً.</p>
+                        {% endif %}
+                    </div>
+
+                    <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <a href="{{ url_for('admin_backup') }}" class="btn btn-outline"
+                            onclick="return confirm('هل تريد إنشاء نسخة احتياطية الآن؟')">
+                            <i class="fas fa-database"></i> نسخ احتياطي (Backup)
+                        </a>
+
+                        <a href="{{ url_for('setup_2fa') }}" class="btn btn-outline"
+                            style="border-color: #4CAF50; color: #4CAF50;">
+                            <i class="fas fa-shield-alt"></i> إعداد المصادقة الثنائية (2FA)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+</section>
+
+<script>
+    function toggleContext(id) {
+        const el = document.getElementById(id);
+        if (el.style.display === 'none' || el.style.display === '') {
+            el.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

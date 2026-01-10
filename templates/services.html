@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+
+
+{% block content %}
+<!-- Services Section -->
+<section class="services section-padding bg-darker" style="margin-top: 80px;">
+    <div class="container">
+        <h2 class="section-title text-center">خدماتنا</h2>
+        <div class="divider center-divider"></div>
+        <div class="services-grid">
+            <a href="{{ url_for('service_detail', service_id='modern-paints') }}" class="service-card-link"
+                style="text-decoration: none; color: inherit;">
+                <div class="service-card">
+                    <i class="fas fa-paint-roller service-icon"></i>
+                    <h3>دهانات داخلية وخارجية</h3>
+                    <p>تنفيذ مثالي للدهانات بأحدث الصيحات والألوان التي تناسب ذوقك.</p>
+                </div>
+            </a>
+            <a href="{{ url_for('service_detail', service_id='putty-finishing') }}" class="service-card-link"
+                style="text-decoration: none; color: inherit;">
+                <div class="service-card">
+                    <i class="fas fa-fill-drip service-icon"></i>
+                    <h3>تشطيب كامل ومعجون</h3>
+                    <p>تأسيس وتشطيب كامل للجدران لضمان ملمس ناعم وجودة عالية.</p>
+                </div>
+            </a>
+            <a href="{{ url_for('service_detail', service_id='gypsum-board') }}" class="service-card-link"
+                style="text-decoration: none; color: inherit;">
+                <div class="service-card">
+                    <i class="fas fa-drafting-compass service-icon"></i>
+                    <h3>ديكورات جبس بورد</h3>
+                    <p>تصميمات أسقف وجدران مودرن وعصرية تضيف لمسة جمالية للمكان.</p>
+                </div>
+            </a>
+            <a href="{{ url_for('service_detail', service_id='wallpaper') }}" class="service-card-link"
+                style="text-decoration: none; color: inherit;">
+                <div class="service-card">
+                    <i class="fas fa-scroll service-icon"></i>
+                    <h3>تركيب ورق حائط</h3>
+                    <p>تركيب احترافي لجميع أنواع ورق الحائط الكلاسيكي والمودرن.</p>
+                </div>
+            </a>
+            <a href="{{ url_for('service_detail', service_id='renovation') }}" class="service-card-link"
+                style="text-decoration: none; color: inherit;">
+                <div class="service-card">
+                    <i class="fas fa-hammer service-icon"></i>
+                    <h3>تجديد وترميم</h3>
+                    <p>إعادة الحياة للمساحات القديمة وتجديدها بالكامل.</p>
+                </div>
+            </a>
+            <a href="{{ url_for('service_detail', service_id='integrated-finishing') }}" class="service-card-link"
+                style="text-decoration: none; color: inherit;">
+                <div class="service-card">
+                    <i class="fas fa-key service-icon"></i>
+                    <h3>تسليم مفتاح</h3>
+                    <p>نتولى كافة مراحل التشطيب من المحارة وحتى اللمسات الأخيرة.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

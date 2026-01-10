@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding" style="margin-top: 80px; min-height: 60vh; display: flex; align-items: center;">
+    <div class="container">
+        <div class="contact-form" style="max-width: 400px; margin: 0 auto;">
+            <h3 class="text-center text-gold">تحقق أمني (2FA)</h3>
+            <p class="text-center text-muted-dynamic">أدخل الكود من تطبيق Google Authenticator</p>
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+            <div
+                style="background: rgba(255, 0, 0, 0.2); color: #ff6b6b; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login_2fa') }}" method="POST">
+                
+
+                <div class="form-group">
+                    <input type="text" name="token" required placeholder="000 000" maxlength="6"
+                        style="width: 100%; padding: 15px; text-align: center; letter-spacing: 10px; font-size: 1.5rem; background: #121212; border: 1px solid #333; color: var(--gold); border-radius: 8px;">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">تأكيد الدخول</button>
+            </form>
+
+            <div class="text-center" style="margin-top: 20px;">
+                <a href="{{ url_for('logout') }}" style="color: #aaa;">إلغاء</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

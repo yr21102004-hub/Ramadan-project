@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding" style="margin-top: 80px;">
+    <div class="container">
+        <div class="contact-form" style="max-width: 500px; margin: 0 auto;">
+            <h3 class="text-center text-gold">تأكيد الهوية</h3>
+            <p class="text-center text-muted-dynamic">أدخل الكود الذي تم إرسالة إلى رقم الواتس آب الخاص بك</p>
+
+            <form action="{{ url_for('verify_code') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="username" value="{{ username }}">
+                <div class="form-group">
+                    <label>كود التحقق</label>
+                    <input type="text" name="code" required placeholder="xxxxxx"
+                        style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">تأكيد</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
