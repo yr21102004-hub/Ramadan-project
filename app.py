@@ -1091,6 +1091,5 @@ def add_security_headers(response):
     response.headers['X-XSS-Protection'] = '1; mode=block'
     return response
 
-if __name__ == '__main__':
-    print("Starting Simplified Flask Server...")
-    app.run(port=3000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")
