@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="الحاج رمضان محمد جبر للدهانات والديكورات - الخيار الأول لتشطيب منزلك في مصر. نقدم خدمات دهانات حديثة، ديكورات جبس بورد، وتشطيب متكامل بأعلى معايير الجودة والدقة. خبرة تمتد لأكثر من 30 عاماً في تحويل المنازل إلى تحف فنية.">
+    <meta name="csrf-token" content="IjRiMWYzODIyYjgwYjQ5ZjIxY2IwNjkwM2VkYTk5MzBlZmY3ZDE4ZjYi.aWPhEA.EMGJ-DAQ9b6NJgtFUacITLDn100">
+    <title>الحاج رمضان محمد جبر | تشطيبات وديكورات عصرية</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Katibeh&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Flask Static CSS -->
+    <link rel="stylesheet" href="static/style.css?v=4">
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#d4af37">
+    <link rel="apple-touch-icon" href="static/logo.png">
+    <!-- AOS Animations -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+</head>
+
+<body>
+
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="static/logo.png" alt="RMG Logo" style="height: 50px;">
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">الرئيسية</a></li>
+                <li><a href="about">من نحن</a></li>
+                <li><a href="services">خدماتنا</a></li>
+                <li><a href="projects">مشاريعنا</a></li>
+                <li><a href="payment">الدفع الإلكتروني</a></li>
+
+                
+                <li><a href="login">دخول</a></li>
+                
+            </ul>
+            <div class="nav-actions">
+                <button id="theme-toggle" class="btn-icon" aria-label="تبديل الوضع" style="margin-left: 10px;">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <a href="contact" class="btn btn-primary">اتصل بنا</a>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <span class="close-menu"><i class="fas fa-times"></i></span>
+        <a href="index.html">الرئيسية</a>
+        <a href="about">من نحن</a>
+        <a href="services">خدماتنا</a>
+        <a href="projects">مشاريعنا</a>
+
+        <a href="contact">اتصل بنا</a>
+        
+        <a href="login">دخول / تسجيل</a>
+        
+    </div>
+
+    <!-- Page Content -->
+    
+<!-- About Section -->
+<section class="about section-padding" style="margin-top: 80px;">
+    <div class="container about-grid">
+        <div class="about-text" data-aos="fade-left">
+            <h2 class="section-title">نبذة عنا</h2>
+            <div class="divider"></div>
+            <p><strong>الحاج رمضان محمد جبر</strong> للدهانات والديكورات متخصصون ويمتلكون خبرة تزيد عن
+                <strong>30 عاماً</strong> في تنفيذ كافة أعمال التشطيبات والديكورات الداخلية والخارجية.
+            </p>
+            <p>نجمع بين جودة الصنعة، والذوق الرفيع، والالتزام الصارم بالمواعيد لتقديم نتائج استثنائية تحول مساحتك
+                إلى تحفة فنية.</p>
+            <ul class="feature-list">
+                <li data-aos="fade-up" data-aos-delay="100"><i class="fas fa-check-circle"></i> نخدم جميع محافظات مصر
+                </li>
+                <li data-aos="fade-up" data-aos-delay="200"><i class="fas fa-check-circle"></i> متخصصون في الفنادق
+                    والقصور</li>
+                <li data-aos="fade-up" data-aos-delay="300"><i class="fas fa-check-circle"></i> اهتمام بأدق التفاصيل
+                </li>
+            </ul>
+        </div>
+        <div class="about-stats">
+            <div class="stat-card" data-aos="zoom-in" data-aos-delay="100">
+                <h3>+30</h3>
+                <p>عاماً من الخبرة</p>
+            </div>
+            <div class="stat-card" data-aos="zoom-in" data-aos-delay="200">
+                <h3>100%</h3>
+                <p>رضاء العملاء</p>
+            </div>
+            <div class="stat-card" data-aos="zoom-in" data-aos-delay="300">
+                <h3>كل</h3>
+                <p>أنحاء الجمهورية</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="why-us section-padding bg-gold-gradient">
+    <div class="container">
+        <div class="why-us-grid" style="grid-template-columns: 1fr;"> <!-- Full width since Offer is moved -->
+            <div class="why-content">
+                <h2 class="section-title text-black" data-aos="fade-down">لماذا تختارنا؟</h2>
+                <ul class="why-list">
+                    <li data-aos="fade-up" data-aos-delay="100">
+                        <span class="icon-box"><i class="fas fa-history"></i></span>
+                        <div>
+                            <h4>خبرة تزيد عن 30 عاماً</h4>
+                            <p>سنوات طويلة من العمل الجاد والخبرة المتراكمة.</p>
+                        </div>
+                    </li>
+                    <li data-aos="fade-up" data-aos-delay="200">
+                        <span class="icon-box"><i class="fas fa-medal"></i></span>
+                        <div>
+                            <h4>جودة فائقة</h4>
+                            <p>استخدام أجود الخامات وأحدث التقنيات العالمية.</p>
+                        </div>
+                    </li>
+                    <li data-aos="fade-up" data-aos-delay="300">
+                        <span class="icon-box"><i class="fas fa-clock"></i></span>
+                        <div>
+                            <h4>التزام بالمواعيد</h4>
+                            <p>نحترم وقتك ونلتزم بتسليم المشاريع في موعدها المحدد.</p>
+                        </div>
+                    </li>
+                    <li data-aos="fade-up" data-aos-delay="400">
+                        <span class="icon-box"><i class="fas fa-users-cog"></i></span>
+                        <div>
+                            <h4>فريق محترف</h4>
+                            <p>عمالة فنية مدربة على أعلى مستوى من الكفاءة والأمانة.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <p>&copy; 2026 جميع الحقوق محفوظة لـ الحاج رمضان محمد جبر للدهانات والديكورات.</p>
+        </div>
+    </footer>
+
+    <!-- Chat Widget -->
+    <div id="chat-widget" class="chat-widget">
+        <div class="chat-header">
+            <div class="chat-title">
+                <img src="static/chat_logo.png" alt="AI Logo" class="chat-logo-img">
+                <span>المساعد الذكي</span>
+            </div>
+            <span id="close-chat" class="close-chat"><i class="fas fa-times"></i></span>
+        </div>
+        <div class="chat-body" id="chat-messages">
+            <div class="message bot-message">
+                مرحباً! أنا المساعد الذكي لـ الحاج رمضان للدهانات. 🎨
+                <br>يمكنني مساعدتك في حل مشاكل الرطوبة، الشروخ، أو الاستفسار عن خدماتنا.
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="اكتب استفسارك هنا...">
+            <button id="send-chat-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <button id="chat-toggle-btn" class="chat-toggle-btn">
+        <img src="static/chat_logo.png" alt="Chat AI">
+    </button>
+
+    <!-- Flask Static JS -->
+    <script src="static/script.js"></script>
+    <!-- AOS Initialization -->
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100,
+            easing: 'ease-out-back'
+        });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>

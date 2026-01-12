@@ -1,17 +1,18 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<section class="section-padding" style="margin-top: 80px; min-height: 60vh; display: flex; align-items: center;">
+<section class="section-padding"
+    style="margin-top: 80px; min-height: 80vh; display: flex; align-items: center; background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.05), transparent);">
     <div class="container">
-        <div class="premium-card" style="max-width: 400px; margin: 0 auto;" data-aos="zoom-in" data-aos-duration="800">
-            <h2 class="text-center" style="margin-bottom: 30px; color: #D4AF37;" data-aos="fade-down"
-                data-aos-delay="200">تسجيل الدخول</h2>
+        <div class="premium-card" style="max-width: 450px; margin: 0 auto;" data-aos="zoom-in">
+            <h2 class="section-title text-center" style="font-size: 2rem;">تسجيل الدخول</h2>
+            <p class="text-center text-muted-dynamic" style="margin-bottom: 30px;">مرحباً بك مجدداً في RMG Decor</p>
 
             {% with messages = get_flashed_messages() %}
             {% if messages %}
             {% for message in messages %}
-            <div style="background: rgba(255, 0, 0, 0.2); color: #ff6b6b; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center;"
-                data-aos="shake">
+            <div class="glass"
+                style="background: rgba(255, 0, 0, 0.1); color: #ff6b6b; padding: 12px; border-radius: var(--radius-sm); margin-bottom: 25px; text-align: center; border: 1px solid rgba(255, 0, 0, 0.2);">
                 {{ message }}
             </div>
             {% endfor %}
@@ -20,26 +21,25 @@
 
             <form action="{{ url_for('login') }}" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="form-group" data-aos="fade-up" data-aos-delay="300">
+                <div class="form-group" data-aos="fade-up" data-aos-delay="100">
                     <label>اسم المستخدم</label>
-                    <input type="text" name="username" required
-                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px;">
+                    <input type="text" name="username" placeholder="أدخل اسم المستخدم" required>
                 </div>
-                <div class="form-group" data-aos="fade-up" data-aos-delay="400">
+                <div class="form-group" data-aos="fade-up" data-aos-delay="200">
                     <label>كلمة المرور</label>
-                    <input type="password" name="password" required
-                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px;">
+                    <input type="password" name="password" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;" data-aos="zoom-in"
-                    data-aos-delay="500">دخول</button>
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top: 10px;">دخول آمن</button>
             </form>
 
-            <div style="margin-top: 20px; text-align: center; color: #aaa; font-size: 0.9rem;" data-aos="fade-up"
-                data-aos-delay="600">
-                ليس لديك حساب؟ <a href="{{ url_for('register') }}" style="color: #D4AF37;">سجل الآن</a>
-                <br><br>
-                <a href="{{ url_for('forgot_password') }}" style="color: var(--text-muted); font-size: 0.85rem;">هل نسيت
-                    كلمة المرور؟</a>
+            <div style="margin-top: 30px; text-align: center; font-size: 0.95rem;">
+                <span class="text-muted-dynamic">ليس لديك حساب؟</span>
+                <a href="{{ url_for('register') }}" class="text-gold" style="font-weight: 600; margin-right: 5px;">سجل
+                    الآن</a>
+                <div style="margin-top: 20px;">
+                    <a href="{{ url_for('forgot_password') }}" class="text-muted-dynamic"
+                        style="font-size: 0.85rem; transition: var(--transition-fast);">نسيت كلمة المرور؟</a>
+                </div>
             </div>
         </div>
     </div>

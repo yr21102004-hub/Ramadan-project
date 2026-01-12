@@ -203,3 +203,166 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+/* Global Audio Player Logic (Persistent State) */
+document.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('quran-audio');
+    const toggleBtn = document.getElementById('quran-toggle');
+    const icon = toggleBtn ? toggleBtn.querySelector('i') : null;
+
+    if (!audio || !toggleBtn) return;
+
+    // Load State
+    const savedTime = localStorage.getItem('quran_time');
+    const isPlaying = localStorage.getItem('quran_playing') === 'true';
+
+    if (savedTime) {
+        audio.currentTime = parseFloat(savedTime);
+    }
+
+    // Attempt Autoplay if it was playing
+    if (isPlaying) {
+        // Modern browsers block autoplay without interaction.
+        // We catch the error and default to paused state if blocked.
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                updateIcon(true);
+            }).catch(error => {
+                console.log("Autoplay prevented:", error);
+                updateIcon(false);
+                // Reset state to paused to avoid sync issues
+                localStorage.setItem('quran_playing', 'false');
+            });
+        }
+    }
+
+    // Toggle Click Event
+    toggleBtn.addEventListener('click', () => {
+        if (audio.paused) {
+            audio.play().then(() => {
+                updateIcon(true);
+                localStorage.setItem('quran_playing', 'true');
+            });
+        } else {
+            audio.pause();
+            updateIcon(false);
+            localStorage.setItem('quran_playing', 'false');
+        }
+    });
+
+    // Save Position periodically
+    audio.addEventListener('timeupdate', () => {
+        localStorage.setItem('quran_time', audio.currentTime);
+    });
+
+    // Save ended state
+    audio.addEventListener('ended', () => {
+        localStorage.setItem('quran_playing', 'false');
+        updateIcon(false);
+    });
+
+    function updateIcon(playing) {
+        if (playing) {
+            icon.classList.remove('fa-play');
+            icon.classList.add('fa-pause');
+            toggleBtn.classList.add('playing');
+        } else {
+            icon.classList.remove('fa-pause');
+            icon.classList.add('fa-play');
+            toggleBtn.classList.remove('playing');
+        }
+    }
+});
+/* Global Audio Player Logic (Persistent State & AutoPlay) */
+document.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('quran-audio');
+    const toggleBtn = document.getElementById('quran-toggle');
+    const icon = toggleBtn ? toggleBtn.querySelector('i') : null;
+
+    if (!audio || !toggleBtn) return;
+
+    // Load State
+    const savedTime = localStorage.getItem('quran_time');
+
+    // Default to TRUE for autoplay if not set
+    let isPlaying = localStorage.getItem('quran_playing');
+    if (isPlaying === null) {
+        isPlaying = true; // Default auto play
+        localStorage.setItem('quran_playing', 'true');
+    } else {
+        isPlaying = isPlaying === 'true';
+    }
+
+    if (savedTime) {
+        audio.currentTime = parseFloat(savedTime);
+    }
+
+    // Try to play immediately
+    const startAudio = () => {
+        if (localStorage.getItem('quran_playing') === 'true') {
+            audio.play().then(() => {
+                updateIcon(true);
+            }).catch(error => {
+                console.log("Autoplay blocked. Waiting for interaction.");
+                updateIcon(false);
+            });
+        }
+    };
+
+    // First try
+    startAudio();
+
+    // Second try on any user interaction (click anywhere) logic
+    const enableAudioOnInteraction = () => {
+        startAudio();
+        // Remove listeners once we tried
+        document.removeEventListener('click', enableAudioOnInteraction);
+        document.removeEventListener('keydown', enableAudioOnInteraction);
+    };
+
+    if (audio.paused && isPlaying) {
+        document.addEventListener('click', enableAudioOnInteraction);
+        document.addEventListener('keydown', enableAudioOnInteraction);
+    }
+
+    // Toggle Click Event
+    toggleBtn.addEventListener('click', (e) => {
+        // Stop the global interaction listener if user clicks the toggle directly
+        document.removeEventListener('click', enableAudioOnInteraction);
+
+        if (audio.paused) {
+            audio.play().then(() => {
+                updateIcon(true);
+                localStorage.setItem('quran_playing', 'true');
+            });
+        } else {
+            audio.pause();
+            updateIcon(false);
+            localStorage.setItem('quran_playing', 'false');
+        }
+    });
+
+    // Save Position periodically
+    audio.addEventListener('timeupdate', () => {
+        localStorage.setItem('quran_time', audio.currentTime);
+    });
+
+    // Save ended state
+    audio.addEventListener('ended', () => {
+        localStorage.setItem('quran_playing', 'false');
+        updateIcon(false);
+    });
+
+    function updateIcon(playing) {
+        if (playing) {
+            icon.classList.remove('fa-play');
+            icon.classList.add('fa-pause');
+            toggleBtn.classList.add('playing');
+        } else {
+            icon.classList.remove('fa-pause');
+            icon.classList.add('fa-play');
+            toggleBtn.classList.remove('playing');
+        }
+    }
+});

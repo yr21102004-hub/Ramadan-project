@@ -1,72 +1,125 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<section class="section-padding" style="margin-top: 80px; min-height: 60vh; display: flex; align-items: center;">
+<section class="section-padding"
+    style="margin-top: 80px; min-height: 100vh; display: flex; align-items: center; background: radial-gradient(circle at bottom left, rgba(212, 175, 55, 0.05), transparent);">
     <div class="container">
-        <div class="premium-card" style="max-width: 500px; margin: 0 auto;" data-aos="zoom-in" data-aos-duration="800">
-            <h2 class="text-center" style="margin-bottom: 30px; color: #D4AF37;" data-aos="fade-down"
-                data-aos-delay="200">إنشاء حساب جديد</h2>
+        <div class="premium-card" style="max-width: 550px; margin: 0 auto;" data-aos="zoom-in">
+            <h2 class="section-title text-center" style="font-size: 2rem;">إنشاء حساب جديد</h2>
+            <p class="text-center text-muted-dynamic" style="margin-bottom: 30px;">انضم إلى Haj Ramadan Decor وابدأ رحلة
+                التميز</p>
 
             {% with messages = get_flashed_messages() %}
             {% if messages %}
             {% for message in messages %}
-            <div
-                style="background: rgba(255, 0, 0, 0.2); color: #ff6b6b; padding: 10px; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+            <div class="glass"
+                style="background: rgba(255, 0, 0, 0.1); color: #ff6b6b; padding: 12px; border-radius: var(--radius-sm); margin-bottom: 25px; text-align: center; border: 1px solid rgba(255, 0, 0, 0.2);">
                 {{ message }}
             </div>
             {% endfor %}
             {% endif %}
             {% endwith %}
 
-            <form action="{{ url_for('register') }}" method="POST">
+            <form action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-                <div class="form-group" data-aos="fade-up" data-aos-delay="300">
-                    <label>الاسم بالكامل</label>
-                    <input type="text" name="full_name" required
-                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="100">
+                        <label>الاسم بالكامل</label>
+                        <input type="text" name="full_name" placeholder="الاسم الثلاثي" required>
+                    </div>
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="150">
+                        <label>رقم الهاتف</label>
+                        <input type="tel" name="phone" placeholder="01xxxxxxxxx" required>
+                    </div>
                 </div>
 
-                <div class="form-group" data-aos="fade-up" data-aos-delay="400">
-                    <label>البريد الإلكتروني (لتصلك أحدث العروض)</label>
-                    <input type="email" name="email" required placeholder="example@domain.com"
-                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px;">
+                <div class="form-group" data-aos="fade-up" data-aos-delay="200">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" name="email" required placeholder="example@domain.com">
                 </div>
 
-                <div class="form-group" data-aos="fade-up" data-aos-delay="500">
-                    <label>اسم المستخدم (للدخول)</label>
-                    <input type="text" name="username" required
-                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="250">
+                        <label>اسم المستخدم</label>
+                        <input type="text" name="username" placeholder="اسم للدخول" required>
+                    </div>
+                    <div class="form-group" data-aos="fade-up" data-aos-delay="300">
+                        <label>كلمة المرور</label>
+                        <input type="password" name="password" placeholder="••••••••" required>
+                    </div>
                 </div>
 
-                <div class="form-group" data-aos="fade-up" data-aos-delay="600">
-                    <label>كلمة المرور</label>
-                    <input type="password" name="password" required
-                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px;">
-                </div>
-
-                <div class="form-group" data-aos="fade-up" data-aos-delay="700">
-                    <label>رقم الهاتف</label>
-                    <input type="tel" name="phone" required
-                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px;">
-                </div>
-
-                <div class="form-group" data-aos="fade-up" data-aos-delay="800">
+                <div class="form-group" data-aos="fade-up" data-aos-delay="350">
                     <label>وصف المشروع (اختياري)</label>
                     <textarea name="project_description"
                         placeholder="اكتب وصفاً مختصراً لمشروعك (مثال: شقة 150 متر، تشطيب كامل...)"
-                        style="width: 100%; padding: 12px; background: #121212; border: 1px solid #333; color: white; border-radius: 8px; min-height: 80px;"></textarea>
+                        style="min-height: 80px;"></textarea>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block" style="margin-top: 20px;" data-aos="zoom-in"
-                    data-aos-delay="900">تسجيل</button>
+                <div class="form-group" data-aos="fade-up" data-aos-delay="400">
+                    <label>صورة شخصية (اختياري)</label>
+                    <div style="position: relative;">
+                        <input type="file" name="profile_image" id="profile_image" accept="image/*"
+                            style="display: none;" onchange="updateFileName(this)">
+                        <label for="profile_image" class="file-upload-label">
+                            <i class="fas fa-cloud-upload-alt" style="margin-left: 8px;"></i>
+                            <span id="file-name">اختر صورة</span>
+                        </label>
+                        <small style="display: block; margin-top: 8px; color: #999; font-size: 0.85rem;">
+                            يمكنك رفع صورة شخصية لحسابك (JPG, PNG)
+                        </small>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top: 10px;">انضم إلينا
+                    الآن</button>
             </form>
 
-            <div style="margin-top: 20px; text-align: center; color: #aaa; font-size: 0.9rem;" data-aos="fade-up"
-                data-aos-delay="1000">
-                لديك حساب بالفعل؟ <a href="{{ url_for('login') }}" style="color: #D4AF37;">سجل دخولك</a>
+            <div style="margin-top: 30px; text-align: center; font-size: 0.95rem;">
+                <span class="text-muted-dynamic">لديك حساب بالفعل؟</span>
+                <a href="{{ url_for('login') }}" class="text-gold" style="font-weight: 600; margin-right: 5px;">سجل
+                    دخولك</a>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+    function updateFileName(input) {
+        const fileName = document.getElementById('file-name');
+        if (input.files && input.files[0]) {
+            fileName.textContent = input.files[0].name;
+        } else {
+            fileName.textContent = 'اختر صورة';
+        }
+    }
+</script>
+
+<style>
+    .file-upload-label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.05));
+        border: 2px dashed rgba(212, 175, 55, 0.3);
+        border-radius: var(--radius-sm);
+        color: var(--gold);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        width: 100%;
+    }
+
+    .file-upload-label:hover {
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.1));
+        border-color: var(--gold);
+        transform: translateY(-2px);
+    }
+
+    .file-upload-label i {
+        font-size: 1.2rem;
+    }
+</style>
 {% endblock %}

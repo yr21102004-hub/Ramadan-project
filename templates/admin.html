@@ -1,405 +1,934 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<style>
-    .log-high {
-        background: rgba(255, 0, 0, 0.1) !important;
-    }
-
-    .text-high {
-        color: #ff4a4a !important;
-    }
-
-    .text-normal {
-        color: #D4AF37 !important;
-    }
-
-    .ctx-box {
-        display: none;
-        background: #121212;
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        max-height: 300px;
-        overflow-y: auto;
-        border: 1px solid #333;
-    }
-</style>
-
-<section class="section-padding" style="margin-top: 80px;">
+<section class="section-padding admin-section-bg">
     <div class="container">
-        <h2 class="section-title text-center">لوحة تحكم المسؤول</h2>
-        <div class="divider center-divider"></div>
-
-        <!-- AI Learning (Unanswered Questions) -->
-        <div class="row" style="margin-top: 40px;">
-            <div style="flex: 1; min-width: 100%; margin-bottom: 30px;">
-                <h3 style="margin-bottom: 20px; color: #4CAF50; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                    <i class="fas fa-brain"></i> أسئلة لم يفهمها الـ AI (تعليم الذكاء الاصطناعي)
-                </h3>
-                <div style="background: #1E1E1E; padding: 20px; border-radius: 10px;">
-                    {% if unanswered %}
-                    <table style="width: 100%; border-collapse: collapse; color: #ddd;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid #444;">
-                                <th style="padding: 10px; text-align: right;">السؤال (السياق)</th>
-                                <th style="padding: 10px; text-align: right;">الإجابة (ضع ردك هنا)</th>
-                                <th style="padding: 10px; text-align: right;">التاريخ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for uq in unanswered %}
-                            <tr style="border-bottom: 1px solid #333;">
-                                <td style="padding: 10px; width: 40%;">
-                                    <div style="color: #D4AF37; font-weight: bold; margin-bottom: 5px;">{{ uq.question
-                                        }}</div>
-
-                                    <!-- Context Toggle -->
-                                    <button onclick="toggleContext('ctx-{{ loop.index }}')"
-                                        style="background: #333; border: 1px solid #444; color: #4aa3ff; cursor: pointer; font-size: 0.8rem; padding: 5px 10px; border-radius: 4px;">
-                                        <i class="fas fa-history"></i> عرض المحادثة بالكامل
-                                    </button>
-
-                                    <div id="ctx-{{ loop.index }}" class="ctx-box">
-                                        {% set history = get_context(uq.user_id, uq.timestamp) %}
-                                        {% if history %}
-                                        <p
-                                            style="font-size: 0.75rem; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px;">
-                                            المستخدم: {{ history[0].user_name }} (ID: {{ uq.user_id[:8] }}...)
-                                        </p>
-                                        {% for h in history %}
-                                        <div
-                                            style="margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 5px;">
-                                            <div style="font-size: 0.75rem; color: #777;">{{ h.timestamp }}</div>
-                                            <div style="font-size: 0.85rem;"><span style="color: #4aa3ff;">العضو:</span>
-                                                {{ h.message }}</div>
-                                            <div style="font-size: 0.85rem;"><span style="color: #4CAF50;">البوت:</span>
-                                                {{ h.response }}</div>
-                                        </div>
-                                        {% endfor %}
-                                        {% else %}
-                                        <div style="font-size: 0.8rem; color: #777;">لا يوجد سجل محادثة متاح (ربما تم
-                                            تغيير الهوية).</div>
-                                        {% endif %}
-                                    </div>
-                                </td>
-                                <td style="padding: 10px;">
-                                    <form action="{{ url_for('answer_question') }}" method="POST"
-                                        style="display: flex; gap: 10px;">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <input type="hidden" name="question" value="{{ uq.question }}">
-                                        <input type="text" name="answer" value="{{ uq.admin_response or '' }}"
-                                            placeholder="اكتب الإجابة هنا..."
-                                            style="flex: 1; padding: 8px; background: #222; border: 1px solid #444; color: white; border-radius: 5px;">
-                                        <button type="submit" class="btn btn-primary"
-                                            style="padding: 8px 15px;">حفظ</button>
-                                    </form>
-                                    {% if uq.admin_response %}
-                                    <small style="color: #4CAF50;"><i class="fas fa-check-circle"></i> تم التعليم
-                                        بنجاح</small>
-                                    {% endif %}
-                                </td>
-                                <td style="padding: 10px; font-size: 0.8rem; color: #777;">{{ uq.timestamp }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <p style="text-align: center; color: #777;">جميع الأسئلة مفهومة حالياً!</p>
-                    {% endif %}
-                </div>
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="section-title mb-0">لوحة تحكم الإدارة</h2>
+                <p class="text-muted mt-2">إدارة المشاريع، العملاء، والذكاء الاصطناعي</p>
+            </div>
+            <div class="admin-top-actions">
+                <a href="{{ url_for('admin_backup') }}" class="btn btn-primary"
+                    onclick="return confirm('هل أنت متأكد من إنشاء نسخة احتياطية الآن؟')">
+                    <i class="fas fa-database me-2"></i> نسخة احتياطية
+                </a>
             </div>
         </div>
 
-        <div class="row" style="display: flex; gap: 40px; flex-wrap: wrap;">
-            <!-- Message Inbox (Contact Form) -->
-            <div style="flex: 1; min-width: 500px; margin-bottom: 30px;">
-                <h3 style="margin-bottom: 20px; color: #D4AF37; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                    <i class="fas fa-envelope"></i> رسائل الزوار (اتصل بنا)
-                </h3>
-                <div
-                    style="background: #1E1E1E; padding: 20px; border-radius: 10px; max-height: 400px; overflow-y: auto;">
+        <div class="divider mb-5"></div>
+
+        <!-- AI Management Section -->
+        <div class="admin-card mb-5" data-aos="fade-up">
+            <div class="card-header-premium mb-4">
+                <div>
+                    <h3 class="text-primary mb-0">
+                        <i class="fas fa-brain me-2"></i> أسئلة لم يفهمها النظام
+                    </h3>
+                    <span class="badge badge-info">{{ unanswered|length }} سؤال جديد</span>
+                </div>
+                <a href="{{ url_for('admin_learned_answers') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-graduation-cap me-2"></i> عرض الأسئلة المُتعلمة
+                </a>
+            </div>
+
+            <div class="premium-table-wrapper">
+                {% if unanswered %}
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>السؤال والسياق</th>
+                            <th>الإجابة المقترحة</th>
+                            <th>التاريخ</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for uq in unanswered %}
+                        <tr>
+                            <td class="question-col">
+                                <div class="question-text mb-3">{{ uq.question }}</div>
+                                <button onclick="toggleContext('ctx-{{ loop.index }}')" class="btn-context-toggle">
+                                    <i class="fas fa-history me-1"></i> عرض السياق
+                                </button>
+                                <div id="ctx-{{ loop.index }}" class="ctx-box">
+                                    {% set history = get_context(uq.user_id, uq.timestamp) %}
+                                    {% if history %}
+                                    <div class="context-user-info mb-3">
+                                        <i class="fas fa-user-circle me-1"></i> {{ history[0].user_name }}
+                                    </div>
+                                    {% for h in history %}
+                                    <div class="context-chat-row">
+                                        <div class="msg-user"><span>زائر:</span> {{ h.message }}</div>
+                                        <div class="msg-bot"><span>بوت:</span> {{ h.response }}</div>
+                                    </div>
+                                    {% endfor %}
+                                    {% else %}
+                                    <div class="text-muted small">لا يوجد سياق متاح لهذه المحادثة.</div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('answer_question') }}" method="POST" class="answer-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="question" value="{{ uq.question }}">
+                                    <div class="input-group">
+                                        <input type="text" name="answer" value="{{ uq.admin_response or '' }}"
+                                            placeholder="اكتب الرد الصحيح..." class="form-control-premium">
+                                        <button type="submit" class="btn btn-primary btn-save">حفظ</button>
+                                    </div>
+                                </form>
+                            </td>
+                            <td class="text-muted small">{{ uq.timestamp }}</td>
+                            <td class="text-center">
+                                <form action="{{ url_for('delete_answered_question') }}" method="POST"
+                                    class="d-inline-block">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="question" value="{{ uq.question }}">
+
+                                    {% if uq.admin_response %}
+                                    <!-- Case 1: Answered Question (Save & Archive) -->
+                                    <button type="submit" class="btn-delete-question"
+                                        title="إتمام وحفظ للذكاء الاصطناعي"
+                                        onclick="return confirm('سيتم حفظ الإجابة للذكاء الاصطناعي وإزالة السؤال من القائمة. هل أنت متأكد؟');">
+                                        <i class="fas fa-check-circle"></i> تم وحفظ
+                                    </button>
+                                    {% else %}
+                                    <!-- Case 2: Unanswered Question (Delete Only) -->
+                                    <button type="submit" class="btn-delete-action" title="حذف هذا السؤال (تجاهل)"
+                                        onclick="return confirm('تحذير: هذا السؤال ليس له إجابة وسيتم حذفه نهائياً دون أن يتعلم منه النظام. هل أنت متأكد؟');">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                    {% endif %}
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state py-5 text-center">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <p class="text-muted">جميع الأسئلة مفهومة حالياً!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="admin-grid">
+            <!-- Messages Inbox -->
+            <div class="admin-card" data-aos="fade-up" data-aos-delay="100">
+                <h3 class="text-gold mb-4"><i class="fas fa-envelope me-2"></i> رسائل الموقع</h3>
+                <div class="premium-table-wrapper table-scroll-400">
                     {% if messages %}
-                    <table style="width: 100%; border-collapse: collapse; color: #ddd;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid #444;">
-                                <th style="padding: 10px; text-align: right;">الاسم</th>
-                                <th style="padding: 10px; text-align: right;">الهاتف</th>
-                                <th style="padding: 10px; text-align: right;">التاريخ</th>
-                            </tr>
-                        </thead>
+                    <table class="premium-table">
                         <tbody>
                             {% for msg in messages %}
-                            <tr style="border-bottom: 1px solid #333;">
-                                <td style="padding: 10px;">
-                                    <strong>{{ msg.name }}</strong><br>
-                                    <small style="color: #fff;">{{ msg.message }}</small>
+                            <tr>
+                                <td>
+                                    <div class="font-weight-bold">{{ msg.name }}</div>
+                                    <div class="text-muted small">{{ msg.phone }}</div>
                                 </td>
-                                <td style="padding: 10px;">{{ msg.phone }}</td>
-                                <td style="padding: 10px; font-size: 0.85rem; color: #aaa;">{{ msg.created_at[:10] }}
-                                </td>
+                                <td class="msg-content">{{ msg.message[:60] }}{% if msg.message|length > 60 %}...{%
+                                    endif %}</td>
+                                <td class="text-muted small text-nowrap">{{ msg.created_at[:10] }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                     {% else %}
-                    <p style="text-align: center; color: #777;">لا توجد رسائل جديدة.</p>
+                    <div class="text-center py-4 text-muted">لا توجد رسائل.</div>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Recent Chat Logs -->
-            <div style="flex: 1; min-width: 500px; margin-bottom: 30px;">
-                <h3 style="margin-bottom: 20px; color: #4aa3ff; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                    <i class="fas fa-comments"></i> آخر محادثات الـ AI
-                </h3>
-                <div
-                    style="background: #1E1E1E; padding: 20px; border-radius: 10px; max-height: 400px; overflow-y: auto;">
+            <!-- Recent AI Chats -->
+            <div class="admin-card" data-aos="fade-up" data-aos-delay="200">
+                <h3 class="text-info-alt mb-4"><i class="fas fa-comments me-2"></i> آخر محادثات الـ AI</h3>
+                <div class="premium-table-wrapper table-scroll-400">
                     {% if chats %}
-                    <table style="width: 100%; border-collapse: collapse; color: #ddd;">
-                        <thead>
-                            <tr style="border-bottom: 1px solid #444;">
-                                <th style="padding: 10px; text-align: right;">المستخدم</th>
-                                <th style="padding: 10px; text-align: right;">المحادثة</th>
-                            </tr>
-                        </thead>
+                    <table class="premium-table">
                         <tbody>
-                            {% for chat in chats %}
-                            <tr style="border-bottom: 1px solid #333;">
-                                <td style="padding: 10px;">
-                                    <strong>{{ chat.user_name }}</strong><br>
-                                    <small style="color: #777;">{{ chat.timestamp }}</small>
+                            {% for chat in chats[:15] %}
+                            <tr>
+                                <td>
+                                    <div class="font-weight-bold">{{ chat.user_name }}</div>
+                                    <div class="text-gold small truncate-text">{{ chat.message }}</div>
                                 </td>
-                                <td style="padding: 10px;">
-                                    <div style="font-size: 0.9rem;"><span style="color: #4aa3ff;">سؤال:</span> {{
-                                        chat.message }}</div>
-                                    <div style="font-size: 0.9rem;"><span style="color: #4CAF50;">رد الـ AI:</span> {{
-                                        chat.response }}</div>
-                                </td>
+                                <td class="text-muted small text-nowrap">{{ chat.timestamp[11:16] }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                     {% else %}
-                    <p style="text-align: center; color: #777;">لا توجد محادثات مسجلة.</p>
+                    <div class="text-center py-4 text-muted">لا توجد محادثات.</div>
                     {% endif %}
-                </div>
-            </div>
-
-            <!-- Autonomous Security Monitor -->
-            <div class="row" style="margin-top: 40px; width: 100%;">
-                <div style="flex: 1; min-width: 100%; margin-bottom: 30px;">
-                    <h3
-                        style="margin-bottom: 20px; color: #ff4a4a; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                        <i class="fas fa-shield-virus"></i> مراقب الأمان الذكي (Security Audit Logs)
-                    </h3>
-                    <div
-                        style="background: #1E1E1E; padding: 20px; border-radius: 10px; max-height: 300px; overflow-y: auto;">
-                        {% if security_logs %}
-                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; color: #ddd;">
-                            <thead>
-                                <tr style="border-bottom: 1px solid #444; color: #ff4a4a;">
-                                    <th style="padding: 10px; text-align: right;">الحدث</th>
-                                    <th style="padding: 10px; text-align: right;">التفاصيل</th>
-                                    <th style="padding: 10px; text-align: right;">IP</th>
-                                    <th style="padding: 10px; text-align: right;">التاريخ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for log in security_logs %}
-                                <tr style="border-bottom: 1px solid #333;"
-                                    class="{{ 'log-high' if log.severity == 'high' else '' }}">
-                                    <td style="padding: 10px;">
-                                        <span class="{{ 'text-high' if log.severity == 'high' else 'text-normal' }}">
-                                            {{ log.event }}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 10px;">{{ log.details }}</td>
-                                    <td style="padding: 10px; color: #aaa;">{{ log.ip }}</td>
-                                    <td style="padding: 10px; font-size: 0.8rem; color: #777;">{{ log.timestamp }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% else %}
-                        <p style="text-align: center; color: #777;">النظام آمن ومستقر، لا توجد تهديدات مسجلة.</p>
-                        {% endif %}
-                    </div>
-                </div>
-                <!-- Payment Notifications -->
-                <div style="flex: 1; min-width: 100%; margin-bottom: 30px;">
-                    <h3
-                        style="margin-bottom: 20px; color: #4facfe; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                        <i class="fas fa-money-bill-wave"></i> إشعارات الدفع المستلمة
-                    </h3>
-                    <div
-                        style="background: #1E1E1E; padding: 20px; border-radius: 10px; max-height: 300px; overflow-y: auto;">
-                        {% if payments %}
-                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; color: #ddd;">
-                            <thead>
-                                <tr style="border-bottom: 1px solid #444; color: #4facfe;">
-                                    <th style="padding: 10px; text-align: right;">العميل</th>
-                                    <th style="padding: 10px; text-align: right;">المبلغ</th>
-                                    <th style="padding: 10px; text-align: right;">الطريقة</th>
-                                    <th style="padding: 10px; text-align: right;">الحالة</th>
-                                    <th style="padding: 10px; text-align: right;">رقم العملية/الموبايل</th>
-                                    <th style="padding: 10px; text-align: right;">التاريخ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for p in payments %}
-                                <tr style="border-bottom: 1px solid #333;">
-                                    <td style="padding: 10px;">{{ p.full_name }} ({{ p.username }})</td>
-                                    <td style="padding: 10px; color: #4CAF50; font-weight: bold;">{{ p.amount }} ج.م
-                                    </td>
-                                    <td style="padding: 10px;">{{ 'محفظة' if p.method == 'wallet' else 'انستا باي' }}
-                                    </td>
-                                    <td style="padding: 10px;">
-                                        {% if 'success' in p.status %}
-                                        <span style="color: #4CAF50; font-weight: bold;">{{ p.status }}</span>
-                                        {% elif 'failed' in p.status %}
-                                        <span style="color: #ff4a4a; font-weight: bold;">{{ p.status }}</span>
-                                        {% else %}
-                                        <span>{{ p.status }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td style="padding: 10px; color: #D4AF37;">{{ p.transaction_id }}</td>
-                                    <td style="padding: 10px; font-size: 0.8rem; color: #777;">{{ p.timestamp }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% else %}
-                        <p style="text-align: center; color: #777;">لا توجد إشعارات دفع حالياً.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="row" style="display: flex; gap: 40px; flex-wrap: wrap; width: 100%;">
-                <!-- Add User Form -->
-                <div style="flex: 1; min-width: 300px;">
-                    <div class="contact-form">
-                        <h3 style="margin-bottom: 20px;">إضافة عميل / مستخدم جديد</h3>
-                        <form action="{{ url_for('add_user') }}" method="POST">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                            <div class="form-group">
-                                <label>اسم العميل</label>
-                                <input type="text" name="username" required placeholder="اسم المستخدم (للدخول)">
-                            </div>
-                            <div class="form-group">
-                                <label>الاسم بالكامل</label>
-                                <input type="text" name="full_name" required placeholder="الاسم الحقيقي">
-                            </div>
-                            <div class="form-group">
-                                <label>رقم الهاتف</label>
-                                <input type="tel" name="phone" required placeholder="01xxxxxxxxx">
-                            </div>
-                            <div class="form-group">
-                                <label>البريد الإلكتروني</label>
-                                <input type="email" name="email" placeholder="example@domain.com">
-                            </div>
-                            <div class="form-group">
-                                <label>العنوان / المشروع</label>
-                                <input type="text" name="project_location" placeholder="مثال: فيلا التجمع الخامس">
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">إضافة المستخدم</button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- User List -->
-                <div style="flex: 1; min-width: 300px;">
-                    <h3 style="margin-bottom: 20px;">قائمة العملاء ومشاريعهم</h3>
-                    <div style="background: #1E1E1E; padding: 20px; border-radius: 10px;">
-                        {% if users %}
-                        <ul style="list-style: none; padding: 0;">
-                            {% for user in users %}
-                            <li
-                                style="background: #121212; padding: 20px; margin-bottom: 20px; border-radius: 8px; border: 1px solid #333;">
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
-                                    <div style="flex: 1; min-width: 250px;">
-                                        <h4 style="color: #D4AF37; margin: 0; font-size: 1.2rem;">{{ user.full_name }}
-                                            <span style="font-size: 0.8rem; color: #777;">({{ user.username }})</span>
-                                        </h4>
-                                        <p style="font-size: 0.9rem; color: #ccc; margin: 10px 0;">
-                                            <strong>البريد الإلكتروني:</strong> {{ user.email or 'لا يوجد' }}
-                                        </p>
-                                        <p style="font-size: 0.9rem; color: #ccc; margin: 10px 0;">
-                                            <strong>المشروع:</strong> {{ user.project_location or 'غير محدد' }}
-                                        </p>
-                                        <p style="font-size: 0.9rem; color: #ccc; margin: 5px 0;">
-                                            <strong>نسبة الإنجاز الحالية:</strong> <span
-                                                style="color: #4CAF50; font-weight: bold;">{{ user.project_percentage or
-                                                0
-                                                }}%</span>
-                                        </p>
-                                    </div>
-
-                                    <div style="flex: 1; min-width: 250px; margin-top: 10px;">
-                                        <!-- Progress Update Form -->
-                                        <form action="{{ url_for('update_project_percentage') }}" method="POST"
-                                            style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                                            <input type="hidden" name="username" value="{{ user.username }}">
-                                            <input type="number" name="percentage" min="0" max="100"
-                                                value="{{ user.project_percentage or 0 }}"
-                                                style="width: 70px; padding: 5px; background: #222; border: 1px solid #444; color: white; border-radius: 4px;">
-                                            <button type="submit" class="btn btn-primary"
-                                                style="padding: 5px 15px; font-size: 0.8rem;">تحديث %</button>
-                                        </form>
-
-                                        <div style="display: flex; gap: 10px;">
-                                            <a href="{{ url_for('user_profile', username=user.username) }}"
-                                                class="btn btn-outline"
-                                                style="padding: 5px 15px; font-size: 0.8rem; color: #4aa3ff; border-color: #4aa3ff;">عرض
-                                                الملف الكامل</a>
-                                            <form action="{{ url_for('delete_user', username=user.username) }}"
-                                                method="POST" style="display:inline;"
-                                                onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟');">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                                                <button type="submit" class="btn btn-primary"
-                                                    style="background: #a00; border: none; padding: 5px 15px; font-size: 0.8rem;">حذف</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                        {% else %}
-                        <p style="color: #aaa; text-align: center;">لا يوجد عملاء مضافين حالياً.</p>
-                        {% endif %}
-                    </div>
-
-                    <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                        <a href="{{ url_for('admin_backup') }}" class="btn btn-outline"
-                            onclick="return confirm('هل تريد إنشاء نسخة احتياطية الآن؟')">
-                            <i class="fas fa-database"></i> نسخ احتياطي (Backup)
-                        </a>
-
-                        <a href="{{ url_for('setup_2fa') }}" class="btn btn-outline"
-                            style="border-color: #4CAF50; color: #4CAF50;">
-                            <i class="fas fa-shield-alt"></i> إعداد المصادقة الثنائية (2FA)
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Security & Payments -->
+        <div class="admin-grid">
+            <div class="admin-card" data-aos="fade-up">
+                <h3 class="text-danger mb-4"><i class="fas fa-shield-virus me-2"></i> مراقب الأمان</h3>
+                <div class="premium-table-wrapper table-scroll-350">
+                    {% if security_logs %}
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>الحدث</th>
+                                <th>IP</th>
+                                <th>الوقت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in security_logs[:20] %}
+                            <tr class="{% if log.severity == 'high' %}log-severity-high{% endif %}">
+                                <td>
+                                    <div class="text-gold">{{ log.event }}</div>
+                                    <div class="small text-muted">{{ log.details }}</div>
+                                </td>
+                                <td class="small">{{ log.ip }}</td>
+                                <td class="text-muted small text-nowrap">{{ log.timestamp[11:16] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="admin-card" data-aos="fade-up">
+                <h3 class="text-success-alt mb-4"><i class="fas fa-wallet me-2"></i> إشعارات الدفع</h3>
+                <div class="premium-table-wrapper table-scroll-350">
+                    {% if payments %}
+                    <table class="premium-table">
+                        <thead>
+                            <tr>
+                                <th>العميل</th>
+                                <th>المبلغ</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in payments %}
+                            <tr>
+                                <td>{{ p.full_name }}</td>
+                                <td class="text-success-alt font-weight-bold">{{ p.amount }} ج.م</td>
+                                <td>
+                                    <span
+                                        class="badge {% if 'success' in p.status %}badge-success{% elif 'failed' in p.status %}badge-danger{% else %}badge-warning{% endif %}">
+                                        {{ p.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="text-center py-4 text-muted">لا توجد دفعات حالياً.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- User & Project Management -->
+        <div class="admin-grid">
+            <div class="admin-card" data-aos="fade-up">
+                <h3 class="text-primary mb-4"><i class="fas fa-user-plus me-2"></i> تسجيل عميل</h3>
+                <form action="{{ url_for('add_user') }}" method="POST" enctype="multipart/form-data"
+                    class="add-user-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label-premium">اسم المستخدم</label>
+                            <input type="text" name="username" class="form-control-premium" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label-premium">الاسم الكامل</label>
+                            <input type="text" name="full_name" class="form-control-premium" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label-premium">رقم الموبايل</label>
+                            <input type="tel" name="phone" class="form-control-premium" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label-premium">الموقع</label>
+                            <input type="text" name="project_location" class="form-control-premium">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label-premium">صورة شخصية (اختياري)</label>
+                            <div style="position: relative;">
+                                <input type="file" name="profile_image" id="admin_profile_image" accept="image/*"
+                                    style="display: none;" onchange="updateAdminFileName(this)">
+                                <label for="admin_profile_image" class="admin-file-upload-label">
+                                    <i class="fas fa-cloud-upload-alt" style="margin-left: 8px;"></i>
+                                    <span id="admin-file-name">اختر صورة للعميل</span>
+                                </label>
+                                <small style="display: block; margin-top: 8px; color: #999; font-size: 0.85rem;">
+                                    يمكنك رفع صورة شخصية للعميل (JPG, PNG)
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary btn-block py-3">إضافة العميل للنظام</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="admin-card" data-aos="fade-up">
+                <h3 class="text-gold mb-4"><i class="fas fa-tasks me-2"></i> حالة المشاريع</h3>
+                <div class="premium-table-wrapper table-scroll-500">
+                    {% if users %}
+                    <table class="premium-table">
+                        <tbody>
+                            {% for user in users if user.role != 'admin' %}
+                            <tr>
+                                <td style="width: 60px;">
+                                    <div class="user-avatar-wrapper">
+                                        {% if user.profile_image %}
+                                        <img src="{{ url_for('static', filename=user.profile_image) }}"
+                                            alt="{{ user.full_name }}" class="user-avatar"
+                                            onclick="viewImage('{{ url_for('static', filename=user.profile_image) }}', '{{ user.full_name }}')">
+                                        {% else %}
+                                        <div class="user-avatar-placeholder">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="font-weight-bold">{{ user.full_name }}</div>
+                                    <div class="text-muted small">{{ user.project_location }}</div>
+                                    {% if user.email %}
+                                    <div class="text-muted small"><i class="fas fa-envelope"
+                                            style="margin-left: 5px;"></i>{{ user.email }}</div>
+                                    {% endif %}
+                                </td>
+                                <td style="width: 150px;">
+                                    <form action="{{ url_for('update_project_percentage') }}" method="POST"
+                                        class="percentage-form mb-2">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="username" value="{{ user.username }}">
+                                        <div class="d-flex gap-2">
+                                            <input type="number" name="percentage"
+                                                value="{{ user.project_percentage or 0 }}" min="0" max="100"
+                                                class="percentage-input">
+                                            <button type="submit" class="btn-sync-percentage"><i
+                                                    class="fas fa-check"></i></button>
+                                        </div>
+                                    </form>
+                                    <div class="progress-premium">
+                                        <div class="progress-bar-premium"
+                                            style="width: {{ user.project_percentage or 0 }}%;"></div>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <form action="{{ url_for('delete_user', username=user.username) }}" method="POST"
+                                        onsubmit="return confirm('حذف العميل نهائياً؟');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn-delete-action">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+                </div>
+                <div class="mt-4 pt-4 text-center border-top border-dim">
+                    <a href="{{ url_for('setup_2fa') }}" class="btn btn-outline-success">
+                        <i class="fas fa-shield-alt me-2"></i> تأمين الحساب (2FA)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
 <script>
     function toggleContext(id) {
         const el = document.getElementById(id);
-        if (el.style.display === 'none' || el.style.display === '') {
-            el.style.display = 'block';
+        const all = document.querySelectorAll('.ctx-box');
+        all.forEach(box => { if (box.id !== id) box.style.display = 'none'; });
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function viewImage(imageSrc, userName) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'image-modal-overlay';
+        modal.innerHTML = `
+            <div class="image-modal-content">
+                <div class="image-modal-header">
+                    <h3>${userName}</h3>
+                    <button onclick="this.closest('.image-modal-overlay').remove()" class="modal-close-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <img src="${imageSrc}" alt="${userName}" class="modal-image">
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Close on click outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    function updateAdminFileName(input) {
+        const fileName = document.getElementById('admin-file-name');
+        if (input.files && input.files[0]) {
+            fileName.textContent = input.files[0].name;
         } else {
-            el.style.display = 'none';
+            fileName.textContent = 'اختر صورة للعميل';
         }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.AOS) AOS.init({ duration: 800, once: true });
+
+        // Initialize WebSocket
+        initWebSocket();
+    });
+
+    // ============================================
+    // WebSocket Real-time Updates
+    // ============================================
+    function initWebSocket() {
+        // Connect to Socket.IO
+        const socket = io();
+
+        socket.on('connect', function () {
+            console.log('✅ WebSocket connected');
+            // Join admin room
+            socket.emit('join_admin');
+        });
+
+        socket.on('joined_admin', function (data) {
+            console.log('✅ Joined admin room');
+            showNotification('متصل بالتحديثات الفورية', 'success');
+        });
+
+        // Listen for percentage updates
+        socket.on('percentage_updated', function (data) {
+            console.log('📊 Percentage updated:', data);
+            updateProgressBar(data.username, data.percentage);
+            showNotification(`تم تحديث نسبة ${data.username} إلى ${data.percentage}%`, 'info');
+        });
+
+        // Listen for admin notifications
+        socket.on('admin_notification', function (data) {
+            console.log('🔔 Notification:', data);
+
+            switch (data.type) {
+                case 'new_user':
+                    showNotification(`مستخدم جديد: ${data.data.full_name}`, 'success');
+                    // Reload admin page to show new user
+                    setTimeout(() => location.reload(), 2000);
+                    break;
+
+                case 'new_message':
+                    showNotification('رسالة جديدة في الدردشة', 'info');
+                    break;
+
+                case 'new_payment':
+                    showNotification('دفعة جديدة', 'warning');
+                    break;
+            }
+        });
+
+        socket.on('disconnect', function () {
+            console.log('❌ WebSocket disconnected');
+            showNotification('انقطع الاتصال بالتحديثات الفورية', 'error');
+        });
+    }
+
+    // Update progress bar in real-time
+    function updateProgressBar(username, percentage) {
+        const progressBars = document.querySelectorAll('.progress-bar-premium');
+        progressBars.forEach(bar => {
+            const row = bar.closest('tr');
+            if (row) {
+                const usernameInput = row.querySelector('input[name="username"]');
+                if (usernameInput && usernameInput.value === username) {
+                    bar.style.width = percentage + '%';
+                    const percentageInput = row.querySelector('input[name="percentage"]');
+                    if (percentageInput) {
+                        percentageInput.value = percentage;
+                    }
+                }
+            }
+        });
+    }
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+        const colors = {
+            success: '#4CAF50',
+            error: '#F44336',
+            warning: '#FF9800',
+            info: '#2196F3'
+        };
+
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: ${colors[type]};
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
 </script>
+
+<!-- Socket.IO Client Library -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+<style>
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+</style>
+</script>
+
+<style>
+    /* Premium Admin Dashboard Styles */
+    .admin-section-bg {
+        margin-top: 80px;
+        background: radial-gradient(circle at top left, rgba(212, 175, 55, 0.05), transparent);
+        min-height: 100vh;
+    }
+
+    .card-header-premium {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 15px;
+    }
+
+    .question-col {
+        width: 40%;
+    }
+
+    .question-text {
+        color: var(--text);
+        font-weight: 500;
+        font-size: 1.1rem;
+    }
+
+    .btn-context-toggle {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: var(--info);
+        padding: 6px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn-context-toggle:hover {
+        background: rgba(74, 163, 255, 0.1);
+        border-color: var(--info);
+    }
+
+    .context-user-info {
+        color: var(--primary);
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .context-chat-row {
+        margin-bottom: 12px;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+    }
+
+    .context-chat-row .msg-user {
+        color: var(--text);
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+
+    .context-chat-row .msg-user span {
+        color: var(--primary);
+        font-weight: bold;
+        margin-left: 5px;
+    }
+
+    .context-chat-row .msg-bot {
+        color: #ccc;
+        font-size: 0.85rem;
+    }
+
+    .context-chat-row .msg-bot span {
+        color: #4CAF50;
+        font-weight: bold;
+        margin-left: 5px;
+    }
+
+    .answer-form .input-group {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .form-control-premium {
+        background: transparent;
+        border: none;
+        color: white;
+        padding: 12px 15px;
+        width: 100%;
+        outline: none;
+    }
+
+    .btn-save {
+        padding: 10px 20px;
+        border-radius: 0;
+    }
+
+    .table-scroll-400 {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .table-scroll-350 {
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .table-scroll-500 {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .msg-content {
+        font-size: 0.85rem;
+        color: #aaa;
+        max-width: 250px;
+    }
+
+    .truncate-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 200px;
+    }
+
+    .text-success-alt {
+        color: #4CAF50;
+    }
+
+    .text-info-alt {
+        color: #4facfe;
+    }
+
+    .text-nowrap {
+        white-space: nowrap;
+    }
+
+    .form-label-premium {
+        display: block;
+        font-size: 0.8rem;
+        color: #999;
+        margin-bottom: 8px;
+    }
+
+    .percentage-input {
+        width: 60px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: white;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        outline: none;
+    }
+
+    .btn-sync-percentage {
+        background: var(--primary);
+        border: none;
+        color: black;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn-sync-percentage:hover {
+        transform: scale(1.1);
+    }
+
+    .progress-premium {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-bar-premium {
+        height: 100%;
+        background: linear-gradient(90deg, var(--gold-dark), var(--primary));
+        border-radius: 3px;
+    }
+
+    .btn-delete-action {
+        background: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.2);
+        color: #F44336;
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn-delete-action:hover {
+        background: #F44336;
+        color: white;
+    }
+
+    .btn-delete-question {
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid rgba(76, 175, 80, 0.3);
+        color: #4CAF50;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: 0.3s;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .btn-delete-question:hover {
+        background: #4CAF50;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-delete-question i {
+        margin-left: 5px;
+    }
+
+
+    .btn-outline-success {
+        border: 1px solid #4CAF50;
+        color: #4CAF50;
+        padding: 10px 25px;
+        border-radius: 25px;
+        text-decoration: none;
+        display: inline-block;
+        transition: 0.3s;
+    }
+
+    .btn-outline-success:hover {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .border-dim {
+        border-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* User Avatar Styles */
+    .user-avatar-wrapper {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid var(--gold);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(212, 175, 55, 0.1);
+    }
+
+    .user-avatar {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .user-avatar:hover {
+        transform: scale(1.1);
+    }
+
+    .user-avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05));
+        color: var(--gold);
+        font-size: 1.5rem;
+    }
+
+    /* Image Modal Styles */
+    .image-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .image-modal-content {
+        background: rgba(20, 20, 20, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        max-width: 90%;
+        max-height: 90%;
+        border: 2px solid var(--gold);
+        box-shadow: 0 10px 50px rgba(212, 175, 55, 0.3);
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .image-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .image-modal-header h3 {
+        color: var(--gold);
+        margin: 0;
+        font-size: 1.3rem;
+    }
+
+    .modal-close-btn {
+        background: rgba(244, 67, 54, 0.2);
+        border: 1px solid rgba(244, 67, 54, 0.4);
+        color: #F44336;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+    }
+
+    .modal-close-btn:hover {
+        background: #F44336;
+        color: white;
+        transform: rotate(90deg);
+    }
+
+    .modal-image {
+        max-width: 600px;
+        max-height: 70vh;
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        display: block;
+    }
+
+    /* Admin File Upload Styles */
+    .admin-file-upload-label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.05));
+        border: 2px dashed rgba(212, 175, 55, 0.3);
+        border-radius: 8px;
+        color: var(--gold);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        width: 100%;
+    }
+
+    .admin-file-upload-label:hover {
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.1));
+        border-color: var(--gold);
+        transform: translateY(-2px);
+    }
+
+    .admin-file-upload-label i {
+        font-size: 1.2rem;
+    }
+</style>
 {% endblock %}

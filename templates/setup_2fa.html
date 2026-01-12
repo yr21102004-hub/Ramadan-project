@@ -1,46 +1,70 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<section class="section-padding" style="margin-top: 80px;">
-    <div class="container">
-        <div
-            style="background: var(--surface-light); padding: 40px; border-radius: 20px; max-width: 600px; margin: 0 auto; border: 1px solid var(--primary); text-align: center;">
-            <h2 class="section-title">إعداد المصادقة الثنائية (2FA)</h2>
-            <div class="divider center-divider"></div>
-
-            <p style="margin-bottom: 30px; color: var(--text-muted);">
-                قم بزيادة أمان حسابك عن طريق تفعيل المصادقة الثنائية. امسح رمز الاستجابة السريعة (QR Code) باستخدام
-                تطبيق Google Authenticator أو Microsoft Authenticator.
-            </p>
-
-            <div
-                style="background: white; padding: 20px; display: inline-block; border-radius: 10px; margin-bottom: 30px;">
-                <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" style="display: block;">
+<section class="section-padding"
+    style="margin-top: 80px; min-height: 100vh; background: radial-gradient(circle at center, rgba(212, 175, 55, 0.05), transparent);">
+    <div class="container" data-aos="zoom-in">
+        <div class="premium-card glass" style="max-width: 600px; margin: 0 auto; padding: 50px; text-align: center;">
+            <div class="icon-box mb-4" style="font-size: 3rem; color: var(--primary);">
+                <i class="fas fa-shield-alt"></i>
             </div>
 
-            <div style="background: var(--surface); padding: 15px; border-radius: 10px; margin-bottom: 30px;">
-                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">الرمز السري (في حال تعذر
-                    المسح):</p>
+            <h2 class="section-title mb-3">تأمين الحساب</h2>
+            <div class="divider center-divider mb-4"></div>
+
+            <p class="text-muted mb-5" style="line-height: 1.8;">
+                المصادقة الثنائية (2FA) تضيف طبقة حماية إضافية لحسابك. عند تفعيلها، ستحتاج إلى إدخال رمز من تطبيق
+                المصادقة الخاص بك بالإضافة إلى كلمة المرور.
+            </p>
+
+            <div class="qr-container mb-5"
+                style="background: white; padding: 25px; border-radius: 15px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code"
+                    style="display: block; width: 200px; height: 200px;">
+            </div>
+
+            <div class="secret-box mb-5"
+                style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; border: 1px dashed rgba(212, 175, 55, 0.3);">
+                <p class="text-muted small mb-2">الرمز السري للاحتياط:</p>
                 <code
-                    style="color: var(--primary); font-size: 1.2rem; font-weight: bold; letter-spacing: 2px;">{{ secret }}</code>
+                    style="color: var(--primary); font-size: 1.3rem; font-weight: bold; letter-spacing: 3px;">{{ secret }}</code>
             </div>
 
             <form action="{{ url_for('toggle_2fa') }}" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 {% if current_user.two_factor_enabled %}
                 <input type="hidden" name="action" value="disable">
-                <button type="submit" class="btn btn-outline" style="border-color: #ff4a4a; color: #ff4a4a;">تعطيل
-                    المصادقة الثنائية</button>
+                <button type="submit" class="btn btn-outline w-100 py-3" style="border-color: #F44336; color: #F44336;">
+                    <i class="fas fa-unlock me-2"></i> تعطيل المصادقة الثنائية
+                </button>
                 {% else %}
                 <input type="hidden" name="action" value="enable">
-                <button type="submit" class="btn btn-primary btn-block">تفعيل الآن</button>
+                <button type="submit" class="btn btn-primary btn-block w-100 py-3">
+                    <i class="fas fa-check-circle me-2"></i> تفعيل وحماية الحساب
+                </button>
                 {% endif %}
             </form>
 
-            <div style="margin-top: 20px;">
-                <a href="{{ url_for('admin') }}" style="color: var(--text-muted);">العودة للوحة التحكم</a>
+            <div class="mt-4">
+                <a href="{{ url_for('admin') }}" class="text-muted small text-decoration-none hover-gold transition">
+                    <i class="fas fa-arrow-right me-1"></i> العودة للوحة الإدارة
+                </a>
             </div>
         </div>
     </div>
 </section>
+
+<style>
+    .hover-gold:hover {
+        color: var(--primary) !important;
+    }
+
+    .transition {
+        transition: 0.3s ease;
+    }
+
+    .w-100 {
+        width: 100%;
+    }
+</style>
 {% endblock %}

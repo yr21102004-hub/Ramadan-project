@@ -1,0 +1,169 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding admin-section-bg">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="section-title mb-0">قاعدة المعرفة المُتعلمة</h2>
+                <p class="text-muted mt-2">الأسئلة والإجابات التي تعلمها الذكاء الاصطناعي من الـ Admin</p>
+            </div>
+            <a href="{{ url_for('admin') }}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-right me-2"></i> العودة للوحة التحكم
+            </a>
+        </div>
+
+        <div class="divider mb-5"></div>
+
+        <!-- Learned Answers Section -->
+        <div class="admin-card" data-aos="fade-up">
+            <div class="card-header-premium mb-4">
+                <h3 class="text-success mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i> الأسئلة المُتعلمة
+                </h3>
+                <span class="badge badge-success">{{ learned|length }} سؤال مُتعلم</span>
+            </div>
+
+            <div class="premium-table-wrapper">
+                {% if learned %}
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">السؤال</th>
+                            <th style="width: 45%;">الإجابة</th>
+                            <th style="width: 15%;">تاريخ التعلم</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in learned %}
+                        <tr>
+                            <td>
+                                <div class="learned-question">
+                                    {{ item.question }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="learned-answer">
+                                    {{ item.answer }}
+                                </div>
+                            </td>
+                            <td class="text-muted small">
+                                {{ item.learned_at[:10] }}<br>
+                                <span class="text-gold">{{ item.learned_at[11:16] }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state py-5 text-center">
+                    <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">لا توجد أسئلة مُتعلمة بعد.</p>
+                    <p class="text-muted small">عندما يقوم الـ Admin بالرد على الأسئلة وحذفها، ستظهر هنا.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        {% if learned %}
+        <div class="admin-card mt-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <i class="fas fa-brain stat-icon text-primary"></i>
+                    <div>
+                        <div class="stat-value">{{ learned|length }}</div>
+                        <div class="stat-label">إجمالي الأسئلة المُتعلمة</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-chart-line stat-icon text-success"></i>
+                    <div>
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">نسبة التعلم</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-robot stat-icon text-info"></i>
+                    <div>
+                        <div class="stat-value">نشط</div>
+                        <div class="stat-label">حالة الذكاء الاصطناعي</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+    .learned-question {
+        color: var(--text);
+        font-weight: 500;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .learned-answer {
+        color: #4CAF50;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        padding: 10px;
+        background: rgba(76, 175, 80, 0.05);
+        border-radius: 8px;
+        border-right: 3px solid #4CAF50;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 20px 0;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: 0.3s;
+    }
+
+    .stat-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateY(-3px);
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.8;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--primary);
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #999;
+        margin-top: 5px;
+    }
+
+    .empty-state {
+        text-align: center;
+    }
+
+    .badge-success {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+</style>
+{% endblock %}

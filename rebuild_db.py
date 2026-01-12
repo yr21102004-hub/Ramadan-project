@@ -21,7 +21,7 @@ hashed_password = bcrypt.generate_password_hash(target_password).decode('utf-8')
 users_table.insert({
     'username': target_username,
     'password': hashed_password,
-    'full_name': 'Ramadan Admin',
+    'full_name': 'Haj Ramadan Admin',
     'phone': '01000000000',
     'role': 'admin',
     'project_location': 'HQ',
