@@ -202,6 +202,56 @@ def analytics_dashboard():
     top_services_view_labels = [x[0] for x in top_services_view_data]
     top_services_view_values = [x[1] for x in top_services_view_data]
 
+    # 7. Peak Hours (Activity by hour of day)
+    hour_counts = Counter()
+    for l in sec_logs:
+        ts = l.get('timestamp', '')
+        if ts and ' ' in ts:
+            try:
+                hour = ts.split(' ')[1].split(':')[0]
+                hour_counts[hour] += 1
+            except: pass
+    # Ensure all 24 hours are represented
+    sorted_hours = sorted([ (str(h).zfill(2), hour_counts.get(str(h).zfill(2), 0)) for h in range(24) ])
+    peak_hours_labels = [x[0] + ":00" for x in sorted_hours]
+    peak_hours_values = [x[1] for x in sorted_hours]
+
+    # 8. AI Efficiency (Answered vs Unanswered)
+    total_ai_msgs = len(chats)
+    unanswered_msgs = len(unanswered)
+    answered_msgs = max(0, total_ai_msgs - unanswered_msgs)
+    ai_efficiency = {
+        'labels': ['تم الرد', 'بدون إجابة'],
+        'values': [answered_msgs, unanswered_msgs]
+    }
+
+    # 9. Page Popularity (General views)
+    page_views = []
+    for l in sec_logs:
+        event = l.get('event', '')
+        if 'View' in event or 'Page' in event:
+            details = l.get('details', '')
+            # Try to extract page name from details like "User viewed page: ..."
+            if 'page: ' in details.lower():
+                pname = details.lower().split('page: ')[1]
+                page_views.append(pname)
+            elif event == 'Service View':
+                page_views.append('الخدمات')
+
+    page_map = {
+        '/': 'الرئيسية',
+        'home': 'الرئيسية',
+        'projects': 'معرض الأعمال',
+        'about': 'من نحن',
+        'contact': 'اتصل بنا',
+        'services': 'الخدمات',
+        'admin': 'لوحة التحكم',
+        'login': 'تسجيل الدخول'
+    }
+    top_pages_data = Counter(page_views).most_common(5)
+    page_pop_labels = [page_map.get(x[0], x[0]) for x in top_pages_data]
+    page_pop_values = [x[1] for x in top_pages_data]
+
     return render_template('analytics.html', analytics={
                                'total_users': total_users_count,
                                'total_requests': total_requests_count,
@@ -220,7 +270,13 @@ def analytics_dashboard():
                                'top_services_req_labels': top_services_req_labels,
                                'top_services_req_values': top_services_req_values,
                                'top_services_view_labels': top_services_view_labels,
-                               'top_services_view_values': top_services_view_values
+                               'top_services_view_values': top_services_view_values,
+                               
+                               'peak_hours_labels': peak_hours_labels,
+                               'peak_hours_values': peak_hours_values,
+                               'ai_efficiency': ai_efficiency,
+                               'page_pop_labels': page_pop_labels,
+                               'page_pop_values': page_pop_values
                            })
 
 @admin_bp.route('/admin/add_user', methods=['POST'])

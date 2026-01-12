@@ -141,6 +141,39 @@
                 </div>
             </div>
 
+            <!-- Divider for Advanced -->
+            <div class="divider my-5"></div>
+            <h3 class="text-gold mb-4"><i class="fas fa-magic me-2"></i> تحليلات متقدمة (Advanced Insights)</h3>
+
+            <!-- Row 3: Peak Hours (Full Width) -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="chart-card">
+                        <h5><i class="fas fa-clock text-gold me-2"></i> توزيع النشاط على مدار اليوم ( Peak Hours )</h5>
+                        <div class="chart-wrapper" style="height: 300px;">
+                            <canvas id="peakHoursChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 4: AI Efficiency & Page Popularity -->
+            <div class="charts-grid mt-4">
+                <div class="chart-card">
+                    <h5><i class="fas fa-robot text-gold me-2"></i> كفاءة الرد الآلي (AI Efficiency)</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="aiEfficiencyChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h5><i class="fas fa-map-marked-alt text-gold me-2"></i> الصفحات الأكثر زيارة (General Popularity)
+                    </h5>
+                    <div class="chart-wrapper">
+                        <canvas id="pagePopChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -157,6 +190,9 @@
         var ctxLogin = document.getElementById('loginChart');
         var ctxServicesReq = document.getElementById('servicesReqChart');
         var ctxServicesView = document.getElementById('servicesViewChart');
+        var ctxPeak = document.getElementById('peakHoursChart');
+        var ctxEfficiency = document.getElementById('aiEfficiencyChart');
+        var ctxPagePop = document.getElementById('pagePopChart');
 
         // Dynamic Colors
         function getColors(count) {
@@ -170,24 +206,22 @@
         const commonOptions = {
             responsive: true,
             maintainAspectRatio: false,
-            devicePixelRatio: 3,
+            devicePixelRatio: 2,
             cutout: '60%',
             plugins: {
                 legend: {
                     position: 'right',
                     labels: {
                         color: '#ccc',
-                        font: { family: 'Cairo', size: 12 },
-                        padding: 15,
-                        usePointStyle: true,
-                        pointStyle: 'circle'
+                        font: { family: 'Cairo', size: 11 },
+                        padding: 10,
+                        usePointStyle: true
                     }
                 }
-            },
-            layout: { padding: 10 }
+            }
         };
 
-        // 1. Top AI Chat Users (Original)
+        // 1. Top AI Chat Users
         if (ctxAi) {
             new Chart(ctxAi, {
                 type: 'doughnut',
@@ -196,15 +230,14 @@
         datasets: [{
             data: {{ analytics.top_ai_values | tojson }},
         backgroundColor: getColors({{ analytics.top_ai_values | length }}),
-        borderWidth: 0,
-        hoverOffset: 10
+        borderWidth: 0
                     }]
                 },
         options: commonOptions
             });
         }
 
-    // 2. All Time Visitors (Original)
+    // 2. All Time Visitors
     if (ctxAllTime) {
         new Chart(ctxAllTime, {
             type: 'doughnut',
@@ -213,8 +246,7 @@
     datasets: [{
         data: {{ analytics.top_all_visitors_values | tojson }},
         backgroundColor: getColors({{ analytics.top_all_visitors_values | length }}),
-        borderWidth: 0,
-        hoverOffset: 10
+        borderWidth: 0
                     }]
                 },
     options: commonOptions
@@ -230,8 +262,7 @@
     datasets: [{
         data: {{ analytics.heavy_visitors_values | tojson }},
         backgroundColor: getColors({{ analytics.heavy_visitors_values | length }}),
-        borderWidth: 0,
-        hoverOffset: 10
+        borderWidth: 0
                     }]
                 },
     options: commonOptions
@@ -247,8 +278,7 @@
     datasets: [{
         data: {{ analytics.daily_visitors_values | tojson }},
         backgroundColor: getColors({{ analytics.daily_visitors_values | length }}),
-        borderWidth: 0,
-        hoverOffset: 10
+        borderWidth: 0
                     }]
                 },
     options: commonOptions
@@ -264,8 +294,7 @@
     datasets: [{
         data: {{ analytics.top_services_req_values | tojson }},
         backgroundColor: getColors({{ analytics.top_services_req_values | length }}),
-        borderWidth: 0,
-        hoverOffset: 10
+        borderWidth: 0
                     }]
                 },
     options: commonOptions
@@ -281,11 +310,80 @@
     datasets: [{
         data: {{ analytics.top_services_view_values | tojson }},
         backgroundColor: getColors({{ analytics.top_services_view_values | length }}),
-        borderWidth: 0,
-        hoverOffset: 10
+        borderWidth: 0
                     }]
                 },
     options: commonOptions
+            });
+        }
+
+    // 7. Peak Hours (Line)
+    if (ctxPeak) {
+        new Chart(ctxPeak, {
+            type: 'line',
+            data: {
+                labels: {{ analytics.peak_hours_labels | tojson }},
+    datasets: [{
+        label: 'عدد الأنشطة',
+        data: {{ analytics.peak_hours_values | tojson }},
+        borderColor: '#ffc107',
+        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+        fill: true,
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 3
+                    }]
+                },
+    options: {
+        responsive: true,
+            maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false }, ticks: { color: '#888' } },
+            x: { grid: { display: false }, ticks: { color: '#888', font: { size: 10 } } }
+        }
+    }
+            });
+        }
+
+    // 8. AI Efficiency (Doughnut)
+    if (ctxEfficiency) {
+        new Chart(ctxEfficiency, {
+            type: 'doughnut',
+            data: {
+                labels: {{ analytics.ai_efficiency.labels | tojson }},
+    datasets: [{
+        data: {{ analytics.ai_efficiency.values | tojson }},
+        backgroundColor: ['#4caf50', '#f44336'],
+        borderWidth: 0
+                    }]
+                },
+    options: commonOptions
+            });
+        }
+
+    // 9. Page Popularity (Horizontal Bar)
+    if (ctxPagePop) {
+        new Chart(ctxPagePop, {
+            type: 'bar',
+            data: {
+                labels: {{ analytics.page_pop_labels | tojson }},
+    datasets: [{
+        data: {{ analytics.page_pop_values | tojson }},
+        backgroundColor: getColors({{ analytics.page_pop_values | length }}),
+        borderRadius: 5
+                    }]
+                },
+    options: {
+        indexAxis: 'y',
+            responsive: true,
+                maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+        scales: {
+            x: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#888' } },
+            y: { grid: { display: false }, ticks: { color: '#ccc', font: { family: 'Cairo' } } }
+        }
+    }
             });
         }
     });
