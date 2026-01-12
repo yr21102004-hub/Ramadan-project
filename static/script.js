@@ -91,7 +91,9 @@ async function submitContactForm() {
         if (response.ok) {
             // Success
             alert("تم استلام طلبك بنجاح! سيتم الرد عليك في خلال 48 ساعة.");
-            document.querySelector('.contact-form').reset();
+            document.getElementById("name").value = "";
+            document.getElementById("phone").value = "";
+            document.getElementById("message").value = "";
         } else {
             alert("حدث خطأ أثناء الإرسال، يرجى المحاولة مرة أخرى.");
         }

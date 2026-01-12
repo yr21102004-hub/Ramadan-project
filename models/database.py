@@ -143,6 +143,34 @@ class SecurityLogModel:
         return self.table.insert(log_data)
 
 
+class ContactModel:
+    """Contact Model - handles contact form submissions"""
+    
+    def __init__(self):
+        self.db = Database()
+        self.table = self.db.contacts
+        self.query = Query()
+    
+    def get_all(self):
+        """Get all contact messages"""
+        return self.table.all()
+    
+    def create(self, name, phone, message, user_id=None):
+        """Create new contact message"""
+        contact_data = {
+            'name': name,
+            'phone': phone,
+            'message': message,
+            'user_id': user_id,
+            'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        return self.table.insert(contact_data)
+
+    def get_by_user(self, user_id):
+        """Get messages by user ID"""
+        return self.table.search(self.query.user_id == user_id)
+
+
 class LearnedAnswersModel:
     """Learned Answers Model - stores Q&A pairs for AI learning"""
     

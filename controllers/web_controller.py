@@ -1,4 +1,8 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, jsonify
+from flask_login import current_user
+from models import ContactModel
+
+contact_model = ContactModel()
 
 web_bp = Blueprint('web', __name__)
 
@@ -95,3 +99,22 @@ def projects():
 @web_bp.route('/contact')
 def contact():
     return render_template('contact.html')
+
+@web_bp.route('/api/contact', methods=['POST'])
+def contact_api():
+    try:
+        data = request.json
+        name = data.get('name')
+        phone = data.get('phone')
+        message = data.get('message')
+        
+        if not name or not phone or not message:
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        user_id = current_user.username if current_user.is_authenticated else None
+        
+        contact_model.create(name, phone, message, user_id)
+        return jsonify({'message': 'Success'}), 200
+    except Exception as e:
+        print(f"Error saving contact: {e}")
+        return jsonify({'error': 'Internal Server Error'}), 500

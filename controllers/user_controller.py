@@ -4,12 +4,14 @@ from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
-from models import UserModel
+import os
+from models import UserModel, ContactModel
 from websockets import notify_admins, broadcast_percentage_update
 
 user_bp = Blueprint('user', __name__)
 bcrypt = Bcrypt()
 user_model = UserModel()
+contact_model = ContactModel()
 
 @user_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -100,7 +102,12 @@ def profile(username):
         'project_percentage': user_data.get('project_percentage', 0),
         'created_at': user_data.get('created_at')
     }
-    return render_template('user_dashboard.html', user=user_obj)
+    
+    # Fetch user's previous requests
+    requests = contact_model.get_by_user(username)
+    requests.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    return render_template('user_dashboard.html', user=user_obj, requests=requests)
 
 
 @user_bp.route('/admin/update_project_percentage', methods=['POST'])
