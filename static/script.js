@@ -1,83 +1,94 @@
+// Mobile Menu & Theme Toggler Logic
 document.addEventListener('DOMContentLoaded', () => {
-    // Mobile Menu
+    // Mobile Menu Logic
     const hamburger = document.querySelector('.hamburger');
-    const mobileMenu = document.querySelector('.mobile-menu');
-    const closeMenu = document.querySelector('.close-menu');
-    const mobileLinks = document.querySelectorAll('.mobile-menu a');
+    const navLinks = document.querySelector('.nav-links');
 
-    function toggleMenu() {
-        mobileMenu.classList.toggle('active');
-        document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : 'auto';
-    }
-
-    hamburger.addEventListener('click', toggleMenu);
-    closeMenu.addEventListener('click', toggleMenu);
-
-    mobileLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            if (mobileMenu.classList.contains('active')) toggleMenu();
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
         });
-    });
 
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!hamburger.contains(e.target) && !navLinks.contains(e.target) && navLinks.classList.contains('active')) {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            }
+        });
 
-    // Theme Toggle
-    const themeToggle = document.getElementById('theme-toggle');
-    const themeIcon = themeToggle.querySelector('i');
-
-    function updateThemeIcon(isLight) {
-        if (isLight) {
-            themeIcon.classList.remove('fa-sun');
-            themeIcon.classList.add('fa-moon');
-        } else {
-            themeIcon.classList.remove('fa-moon');
-            themeIcon.classList.add('fa-sun');
-        }
+        // Close menu when clicking a link
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
     }
 
-    // Check saved theme
+    // Theme Toggler Logic
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const icon = themeToggle.querySelector('i');
+
+    // Check for saved theme preference
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') {
-        document.body.classList.add('light-mode');
-        updateThemeIcon(true);
-    } else {
-        updateThemeIcon(false);
+        body.classList.add('light-mode');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
     }
 
-    if (themeToggle) {
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            const isLight = document.body.classList.contains('light-mode');
+    themeToggle.addEventListener('click', () => {
+        body.classList.toggle('light-mode');
 
-            updateThemeIcon(isLight);
-            localStorage.setItem('theme', isLight ? 'light' : 'dark');
-        });
-    }
-
+        if (body.classList.contains('light-mode')) {
+            localStorage.setItem('theme', 'light');
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        } else {
+            localStorage.setItem('theme', 'dark');
+            icon.classList.remove('fa-sun');
+            icon.classList.add('fa-moon');
+        }
+    });
 });
 
 // Contact Form Submission (Global Function)
-// Contact Form Submission (Global Function)
 async function submitContactForm() {
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const message = document.getElementById("message").value;
+    const nameInput = document.getElementById("name");
+    const phoneInput = document.getElementById("phone");
+    const messageInput = document.getElementById("message");
     const submitBtn = document.querySelector('button[type="submit"]');
 
-    if (!name || !phone || !message) {
+    if (!nameInput || !phoneInput || !messageInput) {
         alert("يرجى ملء جميع البيانات");
         return;
     }
 
+    const name = nameInput.value;
+    const phone = phoneInput.value;
+    const message = messageInput.value;
+
     // Change button state
-    const originalText = submitBtn.innerText;
-    submitBtn.innerText = 'جاري الحفظ...';
-    submitBtn.disabled = true;
+    let originalText = "ارسال الرسالة";
+    if (submitBtn) {
+        originalText = submitBtn.innerText;
+        submitBtn.innerText = 'جاري الحفظ...';
+        submitBtn.disabled = true;
+    }
 
     // Database Payload
     const formData = { name, phone, message };
 
+    let isSuccess = false;
+
     try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (!meta) throw new Error("رمز الأمان (CSRF) مفقود - يرجى تحديث الصفحة");
+        const csrfToken = meta.getAttribute('content');
+
         // Attempt to save to DB (NoSQL)
         const response = await fetch('/api/contact', {
             method: 'POST',
@@ -89,73 +100,113 @@ async function submitContactForm() {
         });
 
         if (response.ok) {
+            isSuccess = true;
             // Success
             alert("تم استلام طلبك بنجاح! سيتم الرد عليك في خلال 48 ساعة.");
-            document.getElementById("name").value = "";
-            document.getElementById("phone").value = "";
-            document.getElementById("message").value = "";
+            // Safe Reset
+            try {
+                if (nameInput) nameInput.value = "";
+                if (phoneInput) phoneInput.value = "";
+                if (messageInput) messageInput.value = "";
+            } catch (e) { console.log("Form reset minor error", e); }
         } else {
             alert("حدث خطأ أثناء الإرسال، يرجى المحاولة مرة أخرى.");
         }
 
     } catch (error) {
-        console.error('Error saving to DB:', error);
-        alert("حدث خطأ في الاتصال، يرجى المحاولة لاحقاً.");
+        if (!isSuccess) {
+            console.error('Error saving to DB:', error);
+            alert("حدث خطأ في الاتصال: " + error.message);
+        }
     } finally {
-        submitBtn.innerText = originalText;
-        submitBtn.disabled = false;
+        if (submitBtn) {
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        }
     }
 }
 
 /* Chat Widget Logic */
 document.addEventListener('DOMContentLoaded', () => {
     const chatWidget = document.getElementById('chat-widget');
-    const chatToggle = document.getElementById('chat-toggle-btn');
+    const chatToggle = document.getElementById('chat-toggle');
     const closeChat = document.getElementById('close-chat');
-    const sendBtn = document.getElementById('send-chat-btn');
     const chatInput = document.getElementById('chat-input');
-    const messagesContainer = document.getElementById('chat-messages');
+    const sendBtn = document.getElementById('chat-send');
+    const chatMessages = document.getElementById('chat-messages');
 
-    if (!chatWidget || !chatToggle) return;
-
-    // Toggle Chat
-    function toggleChat() {
-        chatWidget.classList.toggle('active');
-        if (chatWidget.classList.contains('active')) {
-            setTimeout(() => chatInput.focus(), 100);
-        }
+    let chatUserId = localStorage.getItem('chat_user_id');
+    if (!chatUserId) {
+        chatUserId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        localStorage.setItem('chat_user_id', chatUserId);
     }
 
-    chatToggle.addEventListener('click', toggleChat);
-    closeChat.addEventListener('click', toggleChat);
+    if (chatToggle && chatWidget && closeChat) {
+        chatToggle.addEventListener('click', () => {
+            chatWidget.classList.add('active');
+            chatToggle.style.display = 'none';
+            if (chatInput) chatInput.focus();
+        });
 
-    // Send Message
+        closeChat.addEventListener('click', () => {
+            chatWidget.classList.remove('active');
+            setTimeout(() => {
+                chatToggle.style.display = 'flex';
+            }, 300);
+        });
+    }
+
+    // Auto-resize textarea
+    if (chatInput) {
+        chatInput.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if (this.value === '') {
+                this.style.height = '40px';
+            }
+        });
+
+        // Send on Enter (shift+enter for new line)
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    function addMessage(text, type) {
+        const div = document.createElement('div');
+        div.className = `message ${type}`;
+        div.textContent = text;
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
     async function sendMessage() {
+        if (!chatInput) return;
+
         const text = chatInput.value.trim();
         if (!text) return;
 
-        // Add User Message
-        appendMessage(text, 'user-message');
+        // Visual update
+        addMessage(text, 'user');
         chatInput.value = '';
+        chatInput.style.height = '40px';
 
-        // Add Loading Indicator
-        const loadingId = 'loading-' + Date.now();
-        appendMessage('<i class="fas fa-ellipsis-h fa-fade"></i>', 'bot-message', loadingId);
+        // Add loading indicator
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message bot loading';
+        loadingDiv.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+        chatMessages.appendChild(loadingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
 
         try {
-            // Persistent ID for Chat Grouping
-            let chatUserId = localStorage.getItem('chat_user_id');
-            if (!chatUserId || chatUserId === 'anonymous') {
-                chatUserId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-                localStorage.setItem('chat_user_id', chatUserId);
-            }
-
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 },
                 body: JSON.stringify({
                     message: text,
@@ -165,205 +216,81 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
 
-            // Remove Loading
-            removeMessage(loadingId);
+            // Remove loading
+            loadingDiv.remove();
 
-            // Add Bot Message
-            appendMessage(data.response, 'bot-message');
+            if (data.response) {
+                addMessage(data.response, 'bot');
+            } else {
+                addMessage('عذراً، حدث خطأ في النظام.', 'bot');
+            }
 
         } catch (error) {
-            console.error(error);
-            removeMessage(loadingId);
-            appendMessage('عذراً، حدث خطأ في الاتصال.', 'bot-message');
+            loadingDiv.remove();
+            console.error('Chat Error:', error);
+            addMessage('عذراً، لا يمكن الاتصال بالخادم حالياً.', 'bot');
         }
-    }
-
-    // Helper: Append Message
-    function appendMessage(text, className, id = null) {
-        const div = document.createElement('div');
-        div.className = `message ${className}`;
-        div.innerHTML = text; // Allow HTML
-        if (id) div.id = id;
-
-        messagesContainer.appendChild(div);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        return id;
-    }
-
-    function removeMessage(id) {
-        const el = document.getElementById(id);
-        if (el) el.remove();
     }
 
     if (sendBtn) {
         sendBtn.addEventListener('click', sendMessage);
     }
-
-    if (chatInput) {
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-    }
 });
 
-/* Global Audio Player Logic (Persistent State) */
-document.addEventListener('DOMContentLoaded', () => {
-    const audio = document.getElementById('quran-audio');
-    const toggleBtn = document.getElementById('quran-toggle');
-    const icon = toggleBtn ? toggleBtn.querySelector('i') : null;
-
-    if (!audio || !toggleBtn) return;
-
-    // Load State
-    const savedTime = localStorage.getItem('quran_time');
-    const isPlaying = localStorage.getItem('quran_playing') === 'true';
-
-    if (savedTime) {
-        audio.currentTime = parseFloat(savedTime);
-    }
-
-    // Attempt Autoplay if it was playing
-    if (isPlaying) {
-        // Modern browsers block autoplay without interaction.
-        // We catch the error and default to paused state if blocked.
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                updateIcon(true);
-            }).catch(error => {
-                console.log("Autoplay prevented:", error);
-                updateIcon(false);
-                // Reset state to paused to avoid sync issues
-                localStorage.setItem('quran_playing', 'false');
-            });
-        }
-    }
-
-    // Toggle Click Event
-    toggleBtn.addEventListener('click', () => {
-        if (audio.paused) {
-            audio.play().then(() => {
-                updateIcon(true);
-                localStorage.setItem('quran_playing', 'true');
-            });
-        } else {
-            audio.pause();
-            updateIcon(false);
-            localStorage.setItem('quran_playing', 'false');
-        }
-    });
-
-    // Save Position periodically
-    audio.addEventListener('timeupdate', () => {
-        localStorage.setItem('quran_time', audio.currentTime);
-    });
-
-    // Save ended state
-    audio.addEventListener('ended', () => {
-        localStorage.setItem('quran_playing', 'false');
-        updateIcon(false);
-    });
-
-    function updateIcon(playing) {
-        if (playing) {
-            icon.classList.remove('fa-play');
-            icon.classList.add('fa-pause');
-            toggleBtn.classList.add('playing');
-        } else {
-            icon.classList.remove('fa-pause');
-            icon.classList.add('fa-play');
-            toggleBtn.classList.remove('playing');
-        }
-    }
-});
 /* Global Audio Player Logic (Persistent State & AutoPlay) */
 document.addEventListener('DOMContentLoaded', () => {
     const audio = document.getElementById('quran-audio');
-    const toggleBtn = document.getElementById('quran-toggle');
+    const toggleBtn = document.getElementById('audio-toggle');
     const icon = toggleBtn ? toggleBtn.querySelector('i') : null;
 
     if (!audio || !toggleBtn) return;
 
-    // Load State
-    const savedTime = localStorage.getItem('quran_time');
-
-    // Default to TRUE for autoplay if not set
+    // Check localStorage for playing state
+    // Default to 'true' if not set (AutoPlay)
     let isPlaying = localStorage.getItem('quran_playing');
-    if (isPlaying === null) {
-        isPlaying = true; // Default auto play
-        localStorage.setItem('quran_playing', 'true');
-    } else {
-        isPlaying = isPlaying === 'true';
-    }
 
-    if (savedTime) {
-        audio.currentTime = parseFloat(savedTime);
-    }
-
-    // Try to play immediately
-    const startAudio = () => {
-        if (localStorage.getItem('quran_playing') === 'true') {
-            audio.play().then(() => {
+    // Attempt Autoplay
+    if (isPlaying === null || isPlaying === 'true') {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                isPlaying = 'true';
+                localStorage.setItem('quran_playing', 'true');
                 updateIcon(true);
             }).catch(error => {
-                console.log("Autoplay blocked. Waiting for interaction.");
+                // Auto-play was prevented
+                console.log("Autoplay prevented:", error);
+                isPlaying = 'false';
+                localStorage.setItem('quran_playing', 'false');
                 updateIcon(false);
             });
         }
-    };
-
-    // First try
-    startAudio();
-
-    // Second try on any user interaction (click anywhere) logic
-    const enableAudioOnInteraction = () => {
-        startAudio();
-        // Remove listeners once we tried
-        document.removeEventListener('click', enableAudioOnInteraction);
-        document.removeEventListener('keydown', enableAudioOnInteraction);
-    };
-
-    if (audio.paused && isPlaying) {
-        document.addEventListener('click', enableAudioOnInteraction);
-        document.addEventListener('keydown', enableAudioOnInteraction);
+    } else {
+        updateIcon(false);
     }
 
-    // Toggle Click Event
-    toggleBtn.addEventListener('click', (e) => {
-        // Stop the global interaction listener if user clicks the toggle directly
-        document.removeEventListener('click', enableAudioOnInteraction);
-
+    toggleBtn.addEventListener('click', () => {
         if (audio.paused) {
             audio.play().then(() => {
-                updateIcon(true);
                 localStorage.setItem('quran_playing', 'true');
-            });
+                updateIcon(true);
+            }).catch(e => console.error("Play error:", e));
         } else {
             audio.pause();
-            updateIcon(false);
             localStorage.setItem('quran_playing', 'false');
+            updateIcon(false);
         }
     });
 
-    // Save Position periodically
-    audio.addEventListener('timeupdate', () => {
-        localStorage.setItem('quran_time', audio.currentTime);
-    });
-
-    // Save ended state
-    audio.addEventListener('ended', () => {
-        localStorage.setItem('quran_playing', 'false');
-        updateIcon(false);
-    });
-
     function updateIcon(playing) {
+        if (!icon) return;
         if (playing) {
-            icon.classList.remove('fa-play');
-            icon.classList.add('fa-pause');
-            toggleBtn.classList.add('playing');
+            icon.classList.remove('fa-volume-mute');
+            icon.classList.add('fa-volume-up');
+            toggleBtn.classList.add('playing'); // Optional pulse effect
         } else {
-            icon.classList.remove('fa-pause');
-            icon.classList.add('fa-play');
+            icon.classList.remove('fa-volume-up');
+            icon.classList.add('fa-volume-mute');
             toggleBtn.classList.remove('playing');
         }
     }
