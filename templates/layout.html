@@ -69,33 +69,33 @@
     <nav class="navbar" id="main-nav">
         <div class="container nav-container">
             <div class="logo">
-                <a href="{{ url_for('index') }}">
+                <a href="{{ url_for('web.index') }}">
                     <img src="{{ url_for('static', filename='logo.png') }}" alt="RMG Logo" style="height: 50px;">
                 </a>
             </div>
             <ul class="nav-links">
-                <li><a href="{{ url_for('index') }}">الرئيسية</a></li>
-                <li><a href="{{ url_for('about') }}">من نحن</a></li>
-                <li><a href="{{ url_for('services') }}">خدماتنا</a></li>
-                <li><a href="{{ url_for('projects') }}">مشاريعنا</a></li>
-                <li><a href="{{ url_for('payment') }}">الدفع الإلكتروني</a></li>
+                <li><a href="{{ url_for('web.index') }}">الرئيسية</a></li>
+                <li><a href="{{ url_for('web.about') }}">من نحن</a></li>
+                <li><a href="{{ url_for('web.services') }}">خدماتنا</a></li>
+                <li><a href="{{ url_for('web.projects') }}">مشاريعنا</a></li>
+                <li><a href="{{ url_for('payment.payment') }}">الدفع الإلكتروني</a></li>
 
                 {% if current_user.is_authenticated %}
                 {% if current_user.role == 'admin' %}
-                <li><a href="{{ url_for('admin') }}">لوحة التحكم</a></li>
+                <li><a href="{{ url_for('admin.admin_dashboard') }}">لوحة التحكم</a></li>
                 {% else %}
-                <li><a href="{{ url_for('user_profile', username=current_user.username) }}">حسابي</a></li>
+                <li><a href="{{ url_for('user.profile', username=current_user.username) }}">حسابي</a></li>
                 {% endif %}
-                <li><a href="{{ url_for('logout') }}" style="color: #ff6b6b;">خروج</a></li>
+                <li><a href="{{ url_for('auth.logout') }}" style="color: #ff6b6b;">خروج</a></li>
                 {% else %}
-                <li><a href="{{ url_for('login') }}">دخول</a></li>
+                <li><a href="{{ url_for('auth.login') }}">دخول</a></li>
                 {% endif %}
             </ul>
             <div class="nav-actions">
                 <button id="theme-toggle" class="btn-icon" aria-label="تبديل الوضع" style="margin-left: 10px;">
                     <i class="fas fa-moon"></i>
                 </button>
-                <a href="{{ url_for('contact') }}" class="btn btn-primary">اتصل بنا</a>
+                <a href="{{ url_for('web.contact') }}" class="btn btn-primary">اتصل بنا</a>
                 <div class="hamburger">
                     <i class="fas fa-bars"></i>
                 </div>
@@ -106,21 +106,21 @@
     <!-- Mobile Menu -->
     <div class="mobile-menu">
         <span class="close-menu"><i class="fas fa-times"></i></span>
-        <a href="{{ url_for('index') }}">الرئيسية</a>
-        <a href="{{ url_for('about') }}">من نحن</a>
-        <a href="{{ url_for('services') }}">خدماتنا</a>
-        <a href="{{ url_for('projects') }}">مشاريعنا</a>
+        <a href="{{ url_for('web.index') }}">الرئيسية</a>
+        <a href="{{ url_for('web.about') }}">من نحن</a>
+        <a href="{{ url_for('web.services') }}">خدماتنا</a>
+        <a href="{{ url_for('web.projects') }}">مشاريعنا</a>
 
-        <a href="{{ url_for('contact') }}">اتصل بنا</a>
+        <a href="{{ url_for('web.contact') }}">اتصل بنا</a>
         {% if current_user.is_authenticated %}
         {% if current_user.role == 'admin' %}
-        <a href="{{ url_for('admin') }}">لوحة التحكم</a>
+        <a href="{{ url_for('admin.admin_dashboard') }}">لوحة التحكم</a>
         {% else %}
-        <a href="{{ url_for('user_profile', username=current_user.username) }}">حسابي</a>
+        <a href="{{ url_for('user.profile', username=current_user.username) }}">حسابي</a>
         {% endif %}
-        <a href="{{ url_for('logout') }}">تسجيل خروج</a>
+        <a href="{{ url_for('auth.logout') }}">تسجيل خروج</a>
         {% else %}
-        <a href="{{ url_for('login') }}">دخول / تسجيل</a>
+        <a href="{{ url_for('auth.login') }}">دخول / تسجيل</a>
         {% endif %}
     </div>
 
