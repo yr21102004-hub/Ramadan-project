@@ -1,0 +1,310 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<section class="section-padding request-inspection-bg">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="glass-card p-4 p-md-5" data-aos="fade-up">
+                    <div class="text-center mb-5">
+                        <div class="icon-circle mb-3">
+                            <i class="fas fa-search-location"></i>
+                        </div>
+                        <h2 class="text-gold">طلب معاينة</h2>
+                        <p class="text-white opacity-75">حدد موقعك ونوع الخدمة لنرسل لك أقرب صنايعي</p>
+                    </div>
+
+                    <form method="POST" id="inspectionForm">
+                        <!-- Service Type -->
+                        <div class="mb-4">
+                            <label class="form-label text-gold">نوع الخدمة المطلوبة</label>
+                            <div class="row g-3">
+                                <div class="col-6 col-md-3">
+                                    <input type="radio" class="btn-check" name="service_type" id="service_plumbing"
+                                        value="سباكة" required>
+                                    <label class="btn btn-outline-gold w-100 service-radio" for="service_plumbing">
+                                        <i class="fas fa-faucet mb-2"></i>
+                                        <div>سباكة</div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <input type="radio" class="btn-check" name="service_type" id="service_electrical"
+                                        value="كهرباء">
+                                    <label class="btn btn-outline-gold w-100 service-radio" for="service_electrical">
+                                        <i class="fas fa-bolt mb-2"></i>
+                                        <div>كهرباء</div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <input type="radio" class="btn-check" name="service_type" id="service_carpentry"
+                                        value="نجارة">
+                                    <label class="btn btn-outline-gold w-100 service-radio" for="service_carpentry">
+                                        <i class="fas fa-hammer mb-2"></i>
+                                        <div>نجارة</div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <input type="radio" class="btn-check" name="service_type" id="service_painting"
+                                        value="نقاشة">
+                                    <label class="btn btn-outline-gold w-100 service-radio" for="service_painting">
+                                        <i class="fas fa-paint-roller mb-2"></i>
+                                        <div>نقاشة</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location Details -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label class="form-label text-gold">المحافظة</label>
+                                <select name="governorate" id="governorateSelect" class="form-select glass-input"
+                                    required>
+                                    <option value="">اختر المحافظة</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-gold">المدينة / الحي</label>
+                                <select name="city" id="citySelect" class="form-select glass-input" required>
+                                    <option value="">اختر المدينة</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Location Map -->
+                        <div class="mb-4">
+                            <label class="form-label text-gold">حدد موقعك على الخريطة</label>
+                            <div class="position-relative">
+                                <button type="button"
+                                    class="btn btn-sm btn-gold position-absolute top-0 end-0 m-2 z-index-1"
+                                    id="locateMeBtn">
+                                    <i class="fas fa-location-arrow me-1"></i> موقعي الحالي
+                                </button>
+                                <div id="map" style="height: 300px; border-radius: 10px;"></div>
+                            </div>
+                            <small class="text-white opacity-50 mt-1 d-block">
+                                <i class="fas fa-info-circle me-1"></i>
+                                قم بتحريك الدبوس لتحديد الموقع بدقة
+                            </small>
+                            <input type="hidden" name="latitude" id="latitude">
+                            <input type="hidden" name="longitude" id="longitude">
+                            <input type="hidden" name="address" id="address">
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label class="form-label text-gold">وصف المشكلة (اختياري)</label>
+                            <textarea name="description" class="form-control glass-input" rows="3"
+                                placeholder="اشرح المشكلة باختصار..."></textarea>
+                        </div>
+
+                        <!-- Images -->
+                        <div class="mb-4">
+                            <label class="form-label text-gold">صور للمكان (اختياري)</label>
+                            <input type="file" name="images" class="form-control glass-input" accept="image/*" multiple>
+                            <small class="text-muted d-block mt-2">يساعدنا في تقييم أفضل للوضع</small>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-gold btn-lg w-100" id="submitBtn">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                إرسال الطلب
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .request-inspection-bg {
+        background: url('/static/images/hero-bg.jpg') no-repeat center center;
+        background-size: cover;
+        position: relative;
+        min-height: 100vh;
+        padding-top: 100px;
+    }
+
+    .request-inspection-bg::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        background: rgba(212, 175, 55, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-size: 2rem;
+        color: var(--gold);
+        border: 2px solid var(--gold);
+    }
+
+    .service-radio {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 15px 10px;
+        height: 100px;
+        border-radius: 10px;
+        transition: all 0.3s;
+    }
+
+    .service-radio i {
+        font-size: 1.5rem;
+    }
+
+    .btn-check:checked+.service-radio {
+        background: var(--gold);
+        color: #000;
+        border-color: var(--gold);
+    }
+
+    .glass-input {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .glass-input option {
+        background: #000;
+        color: #fff;
+    }
+
+    .glass-input:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--gold);
+        color: #fff;
+    }
+
+    .z-index-1 {
+        z-index: 1000;
+    }
+</style>
+
+<script>
+    // Initialize Map
+    // Default to Cairo
+    var map = L.map('map').setView([30.0444, 31.2357], 13);
+    var marker;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add marker on click
+    map.on('click', function (e) {
+        setMarker(e.latlng);
+    });
+
+    function setMarker(latlng) {
+        if (marker) {
+            marker.setLatLng(latlng);
+        } else {
+            marker = L.marker(latlng, { draggable: true }).addTo(map);
+            marker.on('dragend', function (e) {
+                updateInputs(e.target.getLatLng());
+            });
+        }
+        updateInputs(latlng);
+    }
+
+    function updateInputs(latlng) {
+        document.getElementById('latitude').value = latlng.lat;
+        document.getElementById('longitude').value = latlng.lng;
+
+        // Reverse Geocoding (Optional/Basic)
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('address').value = data.display_name;
+            })
+            .catch(error => console.log('Error getting address:', error));
+    }
+
+    // Locate Me Button
+    document.getElementById('locateMeBtn').addEventListener('click', function () {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                var lat = position.coords.latitude;
+                var lng = position.coords.longitude;
+                var latlng = L.latLng(lat, lng);
+
+                map.setView(latlng, 16);
+                setMarker(latlng);
+            }, function () {
+                alert("لم نتمكن من تحديد موقعك. يرجى تفعيل الـ GPS.");
+            });
+        } else {
+            alert("المتصفح لا يدعم تحديد الموقع.");
+        }
+    });
+
+    // Form Validation logic
+    document.getElementById('inspectionForm').addEventListener('submit', function (e) {
+        if (!document.getElementById('latitude').value) {
+            e.preventDefault();
+            alert('برجاء تحديد الموقع على الخريطة');
+        }
+    });
+
+    // Load Governorates
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/api/governorates')
+            .then(r => r.json())
+            .then(data => {
+                const select = document.getElementById('governorateSelect');
+                data.forEach(gov => {
+                    const opt = document.createElement('option');
+                    opt.value = gov;
+                    opt.textContent = gov;
+                    select.appendChild(opt);
+                });
+            });
+    });
+
+    document.getElementById('governorateSelect').addEventListener('change', function () {
+        const gov = this.value;
+        const citySelect = document.getElementById('citySelect');
+        citySelect.innerHTML = '<option value="">اختر المدينة</option>';
+
+        if (gov) {
+            fetch('/api/cities/' + gov)
+                .then(r => r.json())
+                .then(data => {
+                    data.forEach(city => {
+                        const opt = document.createElement('option');
+                        opt.value = city;
+                        opt.textContent = city;
+                        citySelect.appendChild(opt);
+                    });
+                });
+        }
+    });
+</script>
+{% endblock %}

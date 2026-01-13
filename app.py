@@ -21,6 +21,8 @@ from controllers.user_controller import user_bp
 from controllers.admin_controller import admin_bp
 from controllers.chat_controller import chat_bp
 from controllers.payment_controller import payment_bp
+from controllers.rating_controller import rating_bp
+from controllers.inspection_controller import inspection_bp
 
 # Import WebSocket
 from websockets import init_socketio
@@ -71,6 +73,8 @@ app.register_blueprint(user_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(chat_bp)
 app.register_blueprint(payment_bp)
+app.register_blueprint(rating_bp)
+app.register_blueprint(inspection_bp)
 
 # Error Handlers
 @app.errorhandler(404)

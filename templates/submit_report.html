@@ -1,0 +1,408 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding report-bg">
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8">
+                <div class="glass-card p-4">
+                    <!-- Header -->
+                    <div class="text-center mb-4">
+                        <h3 class="text-gold mb-2">تقرير المعاينة</h3>
+                        <p class="text-white opacity-75">سجل بيانات المعاينة لإرسالها للإدارة</p>
+                    </div>
+
+                    <form id="reportForm">
+                        <!-- Step 1: Photos -->
+                        <div class="step-section mb-4">
+                            <h5 class="section-label">1. صور المكان (3 صور على الأقل) 📸</h5>
+                            <div class="photo-upload-area" id="photoArea">
+                                <i class="fas fa-camera fa-2x text-gold mb-2"></i>
+                                <p class="mb-0 text-white small">اضغط لالتقاط الصور</p>
+                                <input type="file" id="photoInput" accept="image/*" capture="environment" multiple
+                                    hidden>
+                            </div>
+                            <div id="previewGrid" class="preview-grid mt-3"></div>
+                            <div class="text-danger small mt-2" id="photoError"></div>
+                        </div>
+
+                        <!-- Step 2: Voice Note -->
+                        <div class="step-section mb-4">
+                            <h5 class="section-label">2. وصف صوتي (شرح الوضع) 🎙️</h5>
+                            <div class="voice-recorder-area">
+                                <button type="button" id="recordBtn" class="record-btn">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <div class="mt-3 text-white" id="recordingTime">00:00</div>
+                                <div class="mt-2 text-gold small" id="recordingStatus">اضغط للتسجيل</div>
+                                <audio id="audioPreview" controls class="mt-3 w-100 d-none"></audio>
+                                <button type="button" id="deleteAudioBtn"
+                                    class="btn btn-sm btn-outline-danger mt-2 d-none">
+                                    <i class="fas fa-trash"></i> حذف التسجيل
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Quick Selections -->
+                        <div class="step-section mb-4">
+                            <h5 class="section-label">3. تقييم سريع ⚡</h5>
+
+                            <!-- Job Type -->
+                            <label class="text-white small mb-2 d-block">نوع الشغل</label>
+                            <div class="row g-2 mb-3">
+                                <div class="col-4">
+                                    <input type="radio" class="btn-check" name="job_type" id="type1" value="paint">
+                                    <label class="selection-btn" for="type1">🧱 نقاشة</label>
+                                </div>
+                                <div class="col-4">
+                                    <input type="radio" class="btn-check" name="job_type" id="type2" value="maint">
+                                    <label class="selection-btn" for="type2">🔧 صيانة</label>
+                                </div>
+                                <div class="col-4">
+                                    <input type="radio" class="btn-check" name="job_type" id="type3" value="finish">
+                                    <label class="selection-btn" for="type3">🛠️ تشطيب</label>
+                                </div>
+                            </div>
+
+                            <!-- Place Status -->
+                            <label class="text-white small mb-2 d-block">حالة المكان</label>
+                            <div class="row g-2 mb-3">
+                                <div class="col-4">
+                                    <input type="radio" class="btn-check" name="place_status" id="status1"
+                                        value="ready">
+                                    <label class="selection-btn btn-green" for="status1">✅ جاهز</label>
+                                </div>
+                                <div class="col-4">
+                                    <input type="radio" class="btn-check" name="place_status" id="status2"
+                                        value="needs_prep">
+                                    <label class="selection-btn btn-yellow" for="status2">⚠️ تجهيز</label>
+                                </div>
+                                <div class="col-4">
+                                    <input type="radio" class="btn-check" name="place_status" id="status3"
+                                        value="problem">
+                                    <label class="selection-btn btn-red" for="status3">❌ مشكلة</label>
+                                </div>
+                            </div>
+
+                            <!-- Job Size -->
+                            <label class="text-white small mb-2 d-block">حجم الشغل</label>
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <input type="radio" class="btn-check" name="job_size" id="size1" value="small">
+                                    <label class="selection-btn" for="size1">🔹 بسيط</label>
+                                </div>
+                                <div class="col-4">
+                                    <input type="radio" class="btn-check" name="job_size" id="size2" value="medium">
+                                    <label class="selection-btn" for="size2">🔸 متوسط</label>
+                                </div>
+                                <div class="col-4">
+                                    <input type="radio" class="btn-check" name="job_size" id="size3" value="large">
+                                    <label class="selection-btn" for="size3">🔺 كبير</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit" class="btn btn-gold w-100 py-3 fw-bold fs-5" id="submitBtn">
+                            <i class="fas fa-check-circle me-2"></i> إرسال التقرير
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .report-bg {
+        background: #111;
+        min-height: 100vh;
+        padding-top: 100px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+    }
+
+    .section-label {
+        color: var(--gold);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+
+    /* Photos */
+    .photo-upload-area {
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        padding: 20px;
+        text-center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .photo-upload-area:active {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .preview-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+    }
+
+    .preview-img {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 1px solid #444;
+    }
+
+    /* Voice */
+    .voice-recorder-area {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 20px;
+        text-center;
+    }
+
+    .record-btn {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: #333;
+        border: 3px solid #555;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .record-btn.recording {
+        background: #f44336;
+        border-color: #ffcdd2;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 15px rgba(244, 67, 54, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+        }
+    }
+
+    /* Selections */
+    .selection-btn {
+        display: block;
+        width: 100%;
+        padding: 15px 5px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        text-align: center;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+
+    .btn-check:checked+.selection-btn {
+        background: var(--gold);
+        color: #000;
+        font-weight: bold;
+    }
+
+    .btn-check:checked+.btn-green {
+        background: #4caf50;
+        color: #fff;
+    }
+
+    .btn-check:checked+.btn-yellow {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .btn-check:checked+.btn-red {
+        background: #f44336;
+        color: #fff;
+    }
+</style>
+
+<script>
+    // 1. Photo Handling
+    const photoArea = document.getElementById('photoArea');
+    const photoInput = document.getElementById('photoInput');
+    const previewGrid = document.getElementById('previewGrid');
+
+    photoArea.addEventListener('click', () => photoInput.click());
+
+    photoInput.addEventListener('change', function (e) {
+        if (this.files.length > 0) {
+            previewGrid.innerHTML = '';
+            Array.from(this.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'preview-img';
+                    previewGrid.appendChild(img);
+                }
+                reader.readAsDataURL(file);
+            });
+            document.getElementById('photoError').textContent = '';
+        }
+    });
+
+    // 2. Audio Handling
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioBlob = null;
+    let isRecording = false;
+    let startTime;
+    let timerInterval;
+
+    const recordBtn = document.getElementById('recordBtn');
+    const timeDisplay = document.getElementById('recordingTime');
+    const statusDisplay = document.getElementById('recordingStatus');
+    const audioPreview = document.getElementById('audioPreview');
+    const deleteAudioBtn = document.getElementById('deleteAudioBtn');
+
+    recordBtn.addEventListener('click', () => {
+        if (!isRecording) {
+            startRecording();
+        } else {
+            stopRecording();
+        }
+    });
+
+    deleteAudioBtn.addEventListener('click', () => {
+        audioBlob = null;
+        audioPreview.src = '';
+        audioPreview.classList.add('d-none');
+        deleteAudioBtn.classList.add('d-none');
+        statusDisplay.textContent = 'اضغط للتسجيل';
+        timeDisplay.textContent = '00:00';
+    });
+
+    async function startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                audioPreview.src = audioUrl;
+                audioPreview.classList.remove('d-none');
+                deleteAudioBtn.classList.remove('d-none');
+            };
+
+            mediaRecorder.start();
+            isRecording = true;
+            recordBtn.classList.add('recording');
+            statusDisplay.textContent = 'جاري التسجيل...';
+
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        } catch (err) {
+            alert("لا يمكن الوصول للميكروفون: " + err);
+        }
+    }
+
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            isRecording = false;
+            recordBtn.classList.remove('recording');
+            statusDisplay.textContent = 'تم التسجيل';
+            clearInterval(timerInterval);
+        }
+    }
+
+    function updateTimer() {
+        const diff = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
+        const seconds = (diff % 60).toString().padStart(2, '0');
+        timeDisplay.textContent = `${minutes}:${seconds}`;
+    }
+
+    // 3. Form Submission
+    document.getElementById('reportForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Validation
+        if (photoInput.files.length < 3) {
+            document.getElementById('photoError').textContent = 'يجب التقاط 3 صور على الأقل';
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        if (!audioBlob) {
+            alert('يجب تسجيل وصف صوتي للمعاينة');
+            return;
+        }
+
+        const jobType = document.querySelector('input[name="job_type"]:checked');
+        const placeStatus = document.querySelector('input[name="place_status"]:checked');
+        const jobSize = document.querySelector('input[name="job_size"]:checked');
+
+        if (!jobType || !placeStatus || !jobSize) {
+            alert('يرجى اختيار جميع التقييمات (نوع الشغل، الحالة، الحجم)');
+            return;
+        }
+
+        // Prepare Data
+        const formData = new FormData();
+        Array.from(photoInput.files).forEach(file => {
+            formData.append('photos', file);
+        });
+        formData.append('voice_note', audioBlob, 'voice_note.webm');
+        formData.append('job_type', jobType.value);
+        formData.append('place_status', placeStatus.value);
+        formData.append('job_size', jobSize.value);
+
+        // Submit
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
+
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('تم إرسال التقرير بنجاح!');
+                    window.location.href = "{{ url_for('inspection.worker_inspections') }}";
+                } else {
+                    alert('حدث خطأ: ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'إرسال التقرير';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('فشل الإرسال، حاول مرة أخرى');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'إرسال التقرير';
+            });
+    });
+</script>
+{% endblock %}

@@ -138,147 +138,189 @@
                     <div class="nav-card-badge"><i class="fas fa-lock"></i></div>
                 </a>
             </div>
+
+            <!-- Inspections Card -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('admin.admin_inspections') }}" class="nav-card glass">
+                    <div class="nav-card-icon bg-purple-gradient">
+                        <i class="fas fa-search-location"></i>
+                    </div>
+                    <h4>إدارة المعاينات</h4>
+                    <p>توزيع ومتابعة الطلبات</p>
+                    <div class="nav-card-badge">جديد</div>
+                </a>
+            </div>
+
+            <!-- Verification Card -->
+            <div class="col-lg-4 col-md-6">
+                <a href="{{ url_for('admin.admin_verifications') }}" class="nav-card glass">
+                    <div class="nav-card-icon bg-success-gradient">
+                        <i class="fas fa-id-card-alt"></i>
+                    </div>
+                    <h4>طلبات التوثيق</h4>
+                    <p>مراجعة هويات الصنايعية</p>
+                    <div class="nav-card-badge text-gold"><i class="fas fa-check-circle"></i></div>
+                </a>
+            </div>
+            <i class="fas fa-search-location"></i>
+        </div>
+        <h4>إدارة المعاينات</h4>
+        <p>توزيع ومتابعة الطلبات</p>
+        <div class="nav-card-badge">جديد</div>
+        </a>
+    </div>
+
+    <!-- Complaints Card -->
+    <div class="col-lg-4 col-md-6">
+        <a href="{{ url_for('admin.admin_complaints') }}" class="nav-card glass">
+            <div class="nav-card-icon bg-warning-gradient">
+                <i class="fas fa-flag"></i>
+            </div>
+            <h4>إدارة الشكاوى</h4>
+            <p>مراجعة شكاوى المستخدمين</p>
+            <div class="nav-card-badge"><i class="fas fa-exclamation-triangle"></i></div>
+        </a>
+    </div>
+    </div>
+
+    <div class="divider my-5"></div>
+
+    <!-- Messages Section -->
+    <div id="messagesSection" class="mb-5" data-aos="fade-up">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-gold"><i class="fas fa-envelope me-2"></i> رسائل التواصل</h3>
         </div>
 
-        <div class="divider my-5"></div>
-
-        <!-- Messages Section -->
-        <div id="messagesSection" class="mb-5" data-aos="fade-up">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="text-gold"><i class="fas fa-envelope me-2"></i> رسائل التواصل</h3>
-            </div>
-
-            {% if messages %}
-            <div class="table-responsive">
-                <table class="table modern-table">
-                    <thead>
-                        <tr>
-                            <th>الاسم</th>
-                            <th>الهاتف</th>
-                            <th>الخدمة</th>
-                            <th>الرسالة</th>
-                            <th>التاريخ</th>
-                            <th>إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for msg in messages[:10] %}
-                        <tr>
-                            <td>{{ msg.name }}</td>
-                            <td dir="ltr">{{ msg.phone }}</td>
-                            <td>{{ msg.service or 'عام' }}</td>
-                            <td class="text-truncate" style="max-width: 200px;">{{ msg.message }}</td>
-                            <td class="small">{{ msg.created_at[:10] }}</td>
-                            <td>
-                                <form method="POST" action="{{ url_for('admin.delete_message') }}"
-                                    style="display: inline;">
-                                    <input type="hidden" name="doc_id" value="{{ msg.doc_id }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
-                <p>لا توجد رسائل</p>
-            </div>
-            {% endif %}
+        {% if messages %}
+        <div class="table-responsive">
+            <table class="table modern-table">
+                <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>الهاتف</th>
+                        <th>الخدمة</th>
+                        <th>الرسالة</th>
+                        <th>التاريخ</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in messages[:10] %}
+                    <tr>
+                        <td>{{ msg.name }}</td>
+                        <td dir="ltr">{{ msg.phone }}</td>
+                        <td>{{ msg.service or 'عام' }}</td>
+                        <td class="text-truncate" style="max-width: 200px;">{{ msg.message }}</td>
+                        <td class="small">{{ msg.created_at[:10] }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.delete_message') }}" style="display: inline;">
+                                <input type="hidden" name="doc_id" value="{{ msg.doc_id }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-
-        <!-- Unanswered Questions Section -->
-        {% if unanswered %}
-        <div class="mb-5" data-aos="fade-up">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="text-gold"><i class="fas fa-question-circle me-2"></i> أسئلة بانتظار الرد</h3>
-                <span class="badge bg-danger">{{ unanswered|length }}</span>
-            </div>
-
-            {% for q in unanswered[:5] %}
-            <div class="question-card glass mb-3">
-                <div class="question-header">
-                    <strong>{{ q.user_id }}</strong>
-                    <span class="small text-muted">{{ q.timestamp }}</span>
-                </div>
-                <div class="question-body">
-                    <p class="mb-2"><strong>السؤال:</strong> {{ q.question }}</p>
-
-                    <!-- Show context -->
-                    {% set context = get_context(q.user_id, q.timestamp) %}
-                    {% if context %}
-                    <details class="mb-3">
-                        <summary class="text-info small" style="cursor: pointer;">
-                            <i class="fas fa-history me-1"></i> عرض السياق ({{ context|length }} رسالة)
-                        </summary>
-                        <div class="context-box mt-2">
-                            {% for c in context %}
-                            <div class="context-item">
-                                <small class="text-muted">{{ c.timestamp }}</small>
-                                <div class="user-msg">{{ c.message }}</div>
-                                <div class="bot-msg">{{ c.response }}</div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </details>
-                    {% endif %}
-
-                    <form method="POST" action="{{ url_for('admin.answer_question') }}">
-                        <input type="hidden" name="question" value="{{ q.question }}">
-                        <div class="mb-2">
-                            <textarea name="answer" class="form-control" rows="2" placeholder="اكتب الإجابة هنا..."
-                                required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-sm btn-gold">
-                            <i class="fas fa-check me-1"></i> حفظ الإجابة
-                        </button>
-                    </form>
-                </div>
-            </div>
-            {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+            <p>لا توجد رسائل</p>
         </div>
         {% endif %}
+    </div>
 
-        <!-- Payments Section -->
-        <div class="mb-5" data-aos="fade-up">
-            <h3 class="text-gold mb-4"><i class="fas fa-money-bill-wave me-2"></i> عمليات الدفع الأخيرة</h3>
-
-            {% if payments %}
-            <div class="table-responsive">
-                <table class="table modern-table">
-                    <thead>
-                        <tr>
-                            <th>المستخدم</th>
-                            <th>المبلغ</th>
-                            <th>الوسيلة</th>
-                            <th>التاريخ</th>
-                            <th>الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in payments[:10] %}
-                        <tr>
-                            <td>{{ p.username }}</td>
-                            <td class="text-gold fw-bold">{{ p.amount }} ج.م</td>
-                            <td>{{ p.method }}</td>
-                            <td class="small">{{ p.timestamp[:10] }}</td>
-                            <td><span class="badge bg-success">{{ p.status or 'قيد المراجعة' }}</span></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-wallet fa-3x mb-3 opacity-25"></i>
-                <p>لا توجد عمليات دفع</p>
-            </div>
-            {% endif %}
+    <!-- Unanswered Questions Section -->
+    {% if unanswered %}
+    <div class="mb-5" data-aos="fade-up">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-gold"><i class="fas fa-question-circle me-2"></i> أسئلة بانتظار الرد</h3>
+            <span class="badge bg-danger">{{ unanswered|length }}</span>
         </div>
+
+        {% for q in unanswered[:5] %}
+        <div class="question-card glass mb-3">
+            <div class="question-header">
+                <strong>{{ q.user_id }}</strong>
+                <span class="small text-muted">{{ q.timestamp }}</span>
+            </div>
+            <div class="question-body">
+                <p class="mb-2"><strong>السؤال:</strong> {{ q.question }}</p>
+
+                <!-- Show context -->
+                {% set context = get_context(q.user_id, q.timestamp) %}
+                {% if context %}
+                <details class="mb-3">
+                    <summary class="text-info small" style="cursor: pointer;">
+                        <i class="fas fa-history me-1"></i> عرض السياق ({{ context|length }} رسالة)
+                    </summary>
+                    <div class="context-box mt-2">
+                        {% for c in context %}
+                        <div class="context-item">
+                            <small class="text-muted">{{ c.timestamp }}</small>
+                            <div class="user-msg">{{ c.message }}</div>
+                            <div class="bot-msg">{{ c.response }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </details>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('admin.answer_question') }}">
+                    <input type="hidden" name="question" value="{{ q.question }}">
+                    <div class="mb-2">
+                        <textarea name="answer" class="form-control" rows="2" placeholder="اكتب الإجابة هنا..."
+                            required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-gold">
+                        <i class="fas fa-check me-1"></i> حفظ الإجابة
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Payments Section -->
+    <div class="mb-5" data-aos="fade-up">
+        <h3 class="text-gold mb-4"><i class="fas fa-money-bill-wave me-2"></i> عمليات الدفع الأخيرة</h3>
+
+        {% if payments %}
+        <div class="table-responsive">
+            <table class="table modern-table">
+                <thead>
+                    <tr>
+                        <th>المستخدم</th>
+                        <th>المبلغ</th>
+                        <th>الوسيلة</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments[:10] %}
+                    <tr>
+                        <td>{{ p.username }}</td>
+                        <td class="text-gold fw-bold">{{ p.amount }} ج.م</td>
+                        <td>{{ p.method }}</td>
+                        <td class="small">{{ p.timestamp[:10] }}</td>
+                        <td><span class="badge bg-success">{{ p.status or 'قيد المراجعة' }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-wallet fa-3x mb-3 opacity-25"></i>
+            <p>لا توجد عمليات دفع</p>
+        </div>
+        {% endif %}
+    </div>
 
     </div>
 </section>

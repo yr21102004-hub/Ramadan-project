@@ -9,7 +9,7 @@ import qrcode
 import pyotp
 from werkzeug.utils import secure_filename
 from flask_bcrypt import Bcrypt
-from models import UserModel, ChatModel, PaymentModel, SecurityLogModel, UnansweredQuestionsModel, LearnedAnswersModel, ContactModel, Database
+from models import UserModel, ChatModel, PaymentModel, SecurityLogModel, UnansweredQuestionsModel, LearnedAnswersModel, ContactModel, Database, RatingModel, ComplaintModel, InspectionRequestModel
 
 admin_bp = Blueprint('admin', __name__)
 bcrypt = Bcrypt()
@@ -22,6 +22,9 @@ security_log_model = SecurityLogModel()
 unanswered_model = UnansweredQuestionsModel()
 learned_model = LearnedAnswersModel()
 contact_model = ContactModel()
+rating_model = RatingModel()
+complaint_model = ComplaintModel()
+inspection_model = InspectionRequestModel()
 db = Database()
 
 @admin_bp.route('/admin')
@@ -102,7 +105,71 @@ def admin_users():
     all_users = user_model.get_all()
     users = [u for u in all_users if u.get('role', 'user') == 'user']
     
-    return render_template('admin_users.html', users=users)
+    # Get contact messages (requests)
+    messages = contact_model.get_all()
+    
+    # Get unanswered questions
+    unanswered = unanswered_model.get_all()
+    
+    # Get all chats to filter user-related questions
+    chats = chat_model.get_all()
+    
+    # Get payments
+    payments = payment_model.get_all()
+    
+    # Filter unanswered questions from users (not workers)
+    user_unanswered = []
+    for q in unanswered:
+        user_id = q.get('user_id')
+        # Check if this user_id belongs to a user (not worker)
+        user_obj = user_model.get_by_username(user_id)
+        if user_obj and user_obj.get('role', 'user') == 'user':
+            user_unanswered.append(q)
+    
+    # Calculate basic analytics
+    total_users = len(users)
+    total_requests = len(messages)
+    conversion_rate = round((total_requests / total_users * 100), 1) if total_users > 0 else 0
+    pending_questions = len(user_unanswered)
+    
+    # Calculate advanced analytics
+    completed_projects = len([u for u in users if u.get('project_percentage', 0) == 100])
+    ongoing_projects = len([u for u in users if 0 < u.get('project_percentage', 0) < 100])
+    not_started = len([u for u in users if u.get('project_percentage', 0) == 0])
+    
+    # Average completion rate
+    total_percentage = sum([u.get('project_percentage', 0) for u in users])
+    avg_completion = round(total_percentage / total_users, 1) if total_users > 0 else 0
+    
+    # Active users (users with chats)
+    user_chats = [c for c in chats if user_model.get_by_username(c.get('user_id')) and 
+                  user_model.get_by_username(c.get('user_id')).get('role', 'user') == 'user']
+    active_users = len(set([c.get('user_id') for c in user_chats]))
+    
+    # Payment statistics
+    user_payments = [p for p in payments if user_model.get_by_username(p.get('username')) and
+                     user_model.get_by_username(p.get('username')).get('role', 'user') == 'user']
+    total_payments = len(user_payments)
+    
+    analytics = {
+        'total_users': total_users,
+        'total_requests': total_requests,
+        'conversion_rate': conversion_rate,
+        'pending_questions': pending_questions,
+        'completed_projects': completed_projects,
+        'ongoing_projects': ongoing_projects,
+        'not_started': not_started,
+        'avg_completion': avg_completion,
+        'active_users': active_users,
+        'total_payments': total_payments
+    }
+    
+    return render_template('admin_users.html', 
+                         users=users, 
+                         messages=messages[:10],  # Latest 10 messages
+                         unanswered=user_unanswered[:10],  # Latest 10 unanswered
+                         payments=user_payments[:10],  # Latest 10 payments
+                         analytics=analytics)
 
 @admin_bp.route('/admin/workers')
 @login_required
@@ -576,3 +643,169 @@ def security_audit():
     recent_logs = logs[:10]
 
     return render_template('admin_security.html', checks=checks, logs=recent_logs)
+
+
+@admin_bp.route('/admin/complaints')
+@login_required
+def admin_complaints():
+    """View and manage complaints"""
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+    
+    # Get all complaints
+    all_complaints = complaint_model.get_all()
+    
+    # Sort by date (newest first)
+    all_complaints.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    # Get statistics
+    pending = len([c for c in all_complaints if c['status'] == 'قيد المراجعة'])
+    resolved = len([c for c in all_complaints if c['status'] == 'تم الحل'])
+    rejected = len([c for c in all_complaints if c['status'] == 'مرفوضة'])
+    
+    stats = {
+        'total': len(all_complaints),
+        'pending': pending,
+        'resolved': resolved,
+        'rejected': rejected
+    }
+    
+    return render_template('admin_complaints.html', complaints=all_complaints, stats=stats)
+
+
+@admin_bp.route('/admin/complaint/<int:complaint_id>/update', methods=['POST'])
+@login_required
+def update_complaint_status(complaint_id):
+    """Update complaint status"""
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+    
+    status = request.form.get('status')
+    admin_notes = request.form.get('admin_notes', '')
+    
+    complaint_model.update_status(complaint_id, status, admin_notes)
+    
+    flash('تم تحديث حالة الشكوى بنجاح', 'success')
+    return redirect(url_for('admin.admin_complaints'))
+
+
+@admin_bp.route('/admin/inspections')
+@login_required
+def admin_inspections():
+    """View and manage inspections"""
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+    
+    # Get all requests
+    all_requests = inspection_model.get_all()
+    all_requests.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    # Statistics
+    stats = {
+        'new': len([r for r in all_requests if r['status'] == 'new_request']),
+        'assigned': len([r for r in all_requests if r['status'] == 'assigned_to_worker']),
+        'admin_visit': len([r for r in all_requests if r['status'] == 'admin_visit']),
+        'completed': len([r for r in all_requests if r['status'] == 'completed']),
+        'total': len(all_requests)
+    }
+    
+    return render_template('admin_inspections.html', requests=all_requests, stats=stats)
+
+
+@admin_bp.route('/admin/inspection/<request_id>/assign', methods=['POST'])
+@login_required
+def assign_inspection(request_id):
+    """Assign worker or admin to inspection"""
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+    
+    assignment_type = request.form.get('assignment_type') # 'worker' or 'admin'
+    
+    if assignment_type == 'admin':
+        inspection_model.assign_admin_visit(request_id)
+        flash('تم تعيين المعاينة للإدارة', 'success')
+    else:
+        worker_username = request.form.get('worker_username')
+        if worker_username:
+            inspection_model.assign_worker(request_id, worker_username)
+            flash(f'تم تعيين المعاينة للصنايعي {worker_username}', 'success')
+        else:
+            flash('الرجاء اختيار صنايعي', 'error')
+            
+    return redirect(url_for('admin.admin_inspections'))
+
+
+@admin_bp.route('/admin/inspection/<request_id>/details')
+@login_required
+def inspection_details(request_id):
+    """Get inspection details and nearby workers via AJAX"""
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+        
+    req = inspection_model.get_request_by_id(request_id)
+    if not req:
+        return jsonify({'error': 'Request not found'}), 404
+        
+    # Find nearest workers
+    nearby_workers = inspection_model.find_nearest_workers(
+        user_lat=req['user_latitude'],
+        user_lon=req['user_longitude'],
+        service_type=req['service_type'],
+        max_distance=100, # Search wider range for admin
+        limit=10
+    )
+    
+    return jsonify({
+        'request': req,
+        'nearby_workers': nearby_workers
+    })
+
+
+@admin_bp.route('/admin/inspection/<request_id>/approve', methods=['POST'])
+@login_required
+def approve_inspection_report(request_id):
+    """Admin: Approve or Reject Inspection Report"""
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+        
+    decision = request.form.get('decision')
+    admin_notes = request.form.get('admin_notes', '')
+    
+    if decision == 'approve':
+        inspection_model.approve_report(request_id)
+        # Add notification logic here (optional)
+        flash('تم اعتماد التقرير بنجاح، ويمكن للعميل الآن رؤية النتيجة وبيانات الصنايعي', 'success')
+    elif decision == 'reject':
+        inspection_model.update_status(request_id, 'inspection_rejected', {'admin_notes': admin_notes})
+        flash('تم رفض التقرير', 'warning')
+        
+    return redirect(url_for('admin.admin_inspections'))
+
+@admin_bp.route('/admin/verifications')
+@login_required
+def admin_verifications():
+    """Admin: Verification Requests"""
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+        
+    pending = user_model.get_pending_verifications()
+    return render_template('admin_verifications.html', pending=pending)
+
+@admin_bp.route('/admin/verify/<username>', methods=['POST'])
+@login_required
+def process_verification(username):
+    """Admin: Accept/Reject Verification"""
+    if current_user.role != 'admin':
+        return "Access Denied", 403
+        
+    action = request.form.get('action')
+    notes = request.form.get('notes')
+    
+    if action == 'approve':
+        user_model.verify_user(username, 'verified', notes)
+        flash(f'تم توثيق الحساب للصنايعي {username}', 'success')
+    elif action == 'reject':
+        user_model.verify_user(username, 'rejected', notes)
+        flash(f'تم رفض توثيق الصنايعي {username}', 'warning')
+        
+    return redirect(url_for('admin.admin_verifications'))

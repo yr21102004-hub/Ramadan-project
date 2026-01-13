@@ -1,0 +1,519 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding worker-profile-bg">
+    <div class="container">
+        <!-- Worker Header -->
+        <div class="worker-header glass mb-5" data-aos="fade-down">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <div class="worker-avatar">
+                        {% if worker.profile_image %}
+                        <img src="{{ url_for('static', filename=worker.profile_image) }}" alt="{{ worker.full_name }}">
+                        {% else %}
+                        <div class="avatar-placeholder-large">
+                            <i class="fas fa-user-hard-hat"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <h2 class="text-gold mb-2">{{ worker.full_name }}</h2>
+                    <p class="text-white mb-3">
+                        <i class="fas fa-tools me-2"></i>
+                        {{ worker.specialization or 'صنايعي' }}
+                    </p>
+                    <div class="worker-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-star text-warning"></i>
+                            {{ worker.experience_years or 0 }} سنة خبرة
+                        </span>
+                        <span class="meta-item">
+                            <i class="fas fa-phone text-gold"></i>
+                            {{ worker.phone }}
+                        </span>
+                        {% if worker.status == 'active' %}
+                        <span class="badge bg-success">نشط</span>
+                        {% else %}
+                        <span class="badge bg-secondary">غير نشط</span>
+                        {% endif %}
+
+                        <!-- Verification Status -->
+                        {% if worker.verification_status == 'verified' %}
+                        <span class="badge bg-info text-white" title="هوية ومهنة موثقة من الإدارة">
+                            <i class="fas fa-check-circle me-1"></i> صنايعي موثق
+                        </span>
+                        {% elif worker.verification_status == 'pending' %}
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-clock me-1"></i> جاري مراجعة التوثيق
+                        </span>
+                        {% endif %}
+
+                        <!-- Verification Action (Owner Only) -->
+                        {% if current_user.is_authenticated and current_user.username == worker.username %}
+                        {% if not worker.verification_status or worker.verification_status == 'rejected' %}
+                        <a href="{{ url_for('auth.submit_verification') }}" class="btn btn-sm btn-outline-gold ms-2">
+                            <i class="fas fa-shield-alt me-1"></i> توثيق الحساب
+                        </a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rating Stats -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-4 col-md-6">
+                <div class="rating-card glass">
+                    <div class="rating-icon">
+                        <i class="fas fa-hammer text-gold"></i>
+                    </div>
+                    <h5 class="text-white mb-2">جودة الشغل</h5>
+                    <div class="stars-display mb-2">
+                        {% for i in range(1, 6) %}
+                        {% if i <= rating_stats.avg_quality %} <i class="fas fa-star text-warning"></i>
+                            {% elif i - 0.5 <= rating_stats.avg_quality %} <i class="fas fa-star-half-alt text-warning">
+                                </i>
+                                {% else %}
+                                <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                                {% endfor %}
+                    </div>
+                    <p class="rating-value">{{ rating_stats.avg_quality }}</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="rating-card glass">
+                    <div class="rating-icon">
+                        <i class="fas fa-handshake text-gold"></i>
+                    </div>
+                    <h5 class="text-white mb-2">السلوك والتعامل</h5>
+                    <div class="stars-display mb-2">
+                        {% for i in range(1, 6) %}
+                        {% if i <= rating_stats.avg_behavior %} <i class="fas fa-star text-warning"></i>
+                            {% elif i - 0.5 <= rating_stats.avg_behavior %} <i
+                                class="fas fa-star-half-alt text-warning"></i>
+                                {% else %}
+                                <i class="far fa-star text-warning"></i>
+                                {% endif %}
+                                {% endfor %}
+                    </div>
+                    <p class="rating-value">{{ rating_stats.avg_behavior }}</p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="rating-card glass">
+                    <div class="rating-icon">
+                        <i class="fas fa-users text-gold"></i>
+                    </div>
+                    <h5 class="text-white mb-2">عدد التقييمات</h5>
+                    <p class="rating-count">{{ rating_stats.total_ratings }}</p>
+                    <p class="text-muted small">تقييم</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complaint Warning (if any) -->
+        {% if complaint_count.pending > 0 %}
+        <div class="alert alert-warning glass mb-4" data-aos="fade-up">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            يوجد {{ complaint_count.pending }} شكوى قيد المراجعة
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="row g-3 mb-5">
+            {% if current_user.is_authenticated and current_user.role == 'user' %}
+            {% if not user_has_rated %}
+            <div class="col-md-6">
+                <button class="btn btn-gold w-100" data-bs-toggle="modal" data-bs-target="#ratingModal">
+                    <i class="fas fa-star me-2"></i>
+                    تقييم الصنايعي
+                </button>
+            </div>
+            {% endif %}
+            <div class="col-md-6">
+                <button class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#complaintModal">
+                    <i class="fas fa-flag me-2"></i>
+                    تقديم شكوى
+                </button>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-info glass">
+                    <i class="fas fa-info-circle me-2"></i>
+                    يجب تسجيل الدخول كعميل لتقييم الصنايعي أو تقديم شكوى
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Ratings List -->
+        <div class="ratings-section" data-aos="fade-up">
+            <h3 class="text-gold mb-4">
+                <i class="fas fa-comments me-2"></i>
+                التقييمات ({{ ratings|length }})
+            </h3>
+
+            {% if ratings %}
+            <div class="ratings-list">
+                {% for rating in ratings %}
+                <div class="rating-item glass mb-3">
+                    <div class="rating-header">
+                        <div>
+                            <strong class="text-white">{{ rating.user_id }}</strong>
+                            <span class="text-muted small ms-2">{{ rating.created_at[:10] }}</span>
+                        </div>
+                        <div class="rating-scores">
+                            <span class="score-badge">
+                                <i class="fas fa-hammer me-1"></i>
+                                {{ rating.quality_rating }}/5
+                            </span>
+                            <span class="score-badge">
+                                <i class="fas fa-handshake me-1"></i>
+                                {{ rating.behavior_rating }}/5
+                            </span>
+                        </div>
+                    </div>
+                    {% if rating.comment %}
+                    <div class="rating-comment">
+                        <p class="text-white mb-0">{{ rating.comment }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-star fa-3x mb-3 opacity-25"></i>
+                <p>لا توجد تقييمات بعد</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Rating Modal -->
+<div class="modal fade" id="ratingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <h5 class="modal-title text-gold">تقييم الصنايعي</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('rating.rate_worker', worker_username=worker.username) }}">
+                <div class="modal-body">
+                    <!-- Quality Rating -->
+                    <div class="mb-4">
+                        <label class="form-label text-white">
+                            <i class="fas fa-hammer me-2"></i>
+                            جودة الشغل
+                        </label>
+                        <div class="star-rating" data-rating-name="quality_rating">
+                            {% for i in range(1, 6) %}
+                            <i class="far fa-star" data-rating="{{ i }}"></i>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="quality_rating" id="quality_rating" required>
+                    </div>
+
+                    <!-- Behavior Rating -->
+                    <div class="mb-4">
+                        <label class="form-label text-white">
+                            <i class="fas fa-handshake me-2"></i>
+                            السلوك والتعامل
+                        </label>
+                        <div class="star-rating" data-rating-name="behavior_rating">
+                            {% for i in range(1, 6) %}
+                            <i class="far fa-star" data-rating="{{ i }}"></i>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="behavior_rating" id="behavior_rating" required>
+                    </div>
+
+                    <!-- Comment -->
+                    <div class="mb-3">
+                        <label class="form-label text-white">
+                            <i class="fas fa-comment me-2"></i>
+                            تعليق (اختياري)
+                        </label>
+                        <textarea name="comment" class="form-control" rows="3"
+                            placeholder="شاركنا رأيك في الصنايعي..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-gold">إرسال التقييم</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Complaint Modal -->
+<div class="modal fade" id="complaintModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-flag me-2"></i>
+                    تقديم شكوى
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('rating.submit_complaint', worker_username=worker.username) }}"
+                enctype="multipart/form-data">
+                <div class="modal-body">
+                    <!-- Reason -->
+                    <div class="mb-3">
+                        <label class="form-label text-white">سبب الشكوى</label>
+                        <select name="reason" class="form-select" required>
+                            <option value="">اختر السبب</option>
+                            <option value="تأخير">تأخير في العمل</option>
+                            <option value="سوء تعامل">سوء تعامل</option>
+                            <option value="شغل غير مطابق">شغل غير مطابق للمواصفات</option>
+                            <option value="سبب آخر">سبب آخر</option>
+                        </select>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label text-white">وصف المشكلة *</label>
+                        <textarea name="description" class="form-control" rows="4"
+                            placeholder="اشرح المشكلة بالتفصيل..." required></textarea>
+                    </div>
+
+                    <!-- Images -->
+                    <div class="mb-3">
+                        <label class="form-label text-white">
+                            <i class="fas fa-camera me-2"></i>
+                            صور توضيحية (اختياري)
+                        </label>
+                        <input type="file" name="images" class="form-control" accept="image/*" multiple>
+                        <small class="text-muted d-block mt-2">
+                            يمكنك رفع عدة صور (JPG, PNG)
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">تقديم الشكوى</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .worker-profile-bg {
+        background: #0a0a0a;
+        min-height: 100vh;
+        padding-top: 100px;
+    }
+
+    .worker-header {
+        padding: 30px;
+        border-radius: 20px;
+    }
+
+    .worker-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid var(--gold);
+        margin: 0 auto;
+    }
+
+    .worker-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-placeholder-large {
+        width: 100%;
+        height: 100%;
+        background: rgba(212, 175, 55, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--gold);
+    }
+
+    .worker-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .meta-item {
+        color: #ddd;
+        font-size: 0.9rem;
+    }
+
+    .rating-card {
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        height: 100%;
+    }
+
+    .rating-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+
+    .stars-display {
+        font-size: 1.5rem;
+    }
+
+    .rating-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--gold);
+        margin: 10px 0 0 0;
+    }
+
+    .rating-count {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--gold);
+        margin: 10px 0 0 0;
+    }
+
+    .rating-item {
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .rating-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .rating-scores {
+        display: flex;
+        gap: 10px;
+    }
+
+    .score-badge {
+        background: rgba(212, 175, 55, 0.1);
+        color: var(--gold);
+        padding: 5px 12px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .rating-comment {
+        color: #ddd;
+        margin-top: 10px;
+    }
+
+    /* Star Rating Interactive */
+    .star-rating {
+        font-size: 2rem;
+        cursor: pointer;
+        margin: 10px 0;
+    }
+
+    .star-rating i {
+        color: #666;
+        transition: color 0.2s;
+        margin: 0 5px;
+    }
+
+    .star-rating i:hover,
+    .star-rating i.active {
+        color: #ffc107;
+    }
+
+    .glass-modal .form-control,
+    .glass-modal .form-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .glass-modal .form-control:focus,
+    .glass-modal .form-select:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--gold);
+        color: #fff;
+    }
+
+    .glass-modal .form-select option {
+        background: #1a1a1a;
+        color: #fff;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+</style>
+
+<script>
+    // Star Rating System
+    document.querySelectorAll('.star-rating').forEach(ratingDiv => {
+        const ratingName = ratingDiv.getAttribute('data-rating-name');
+        const stars = ratingDiv.querySelectorAll('i');
+        const input = document.getElementById(ratingName);
+
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                const rating = index + 1;
+                input.value = rating;
+
+                // Update star display
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.remove('far');
+                        s.classList.add('fas', 'active');
+                    } else {
+                        s.classList.remove('fas', 'active');
+                        s.classList.add('far');
+                    }
+                });
+            });
+
+            // Hover effect
+            star.addEventListener('mouseenter', () => {
+                const rating = parseInt(star.getAttribute('data-rating'));
+                stars.forEach((s, i) => {
+                    if (i < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // Reset on mouse leave
+        ratingDiv.addEventListener('mouseleave', () => {
+            const currentRating = parseInt(input.value) || 0;
+            stars.forEach((s, i) => {
+                if (i < currentRating) {
+                    s.classList.add('active');
+                } else {
+                    s.classList.remove('active');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,586 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<section class="section-padding admin-section-bg">
+    <div class="container-fluid px-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5" data-aos="fade-down">
+            <div>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-light btn-sm mb-3">
+                    <i class="fas fa-arrow-right me-2"></i> العودة للوحة التحكم
+                </a>
+                <h2 class="section-title mb-0">إدارة المعاينات</h2>
+                <p class="text-muted mt-2">توزيع ومتابعة طلبات المعاينة الواردة</p>
+            </div>
+            <div>
+                <span class="badge bg-gold text-dark fs-6">{{ stats.new }} طلبات جديدة</span>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-5 g-4" data-aos="fade-up">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card glass h-100">
+                    <div class="stat-icon bg-warning-gradient">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ stats.new }}</h3>
+                        <p>طلبات جديدة</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card glass h-100">
+                    <div class="stat-icon bg-primary-gradient">
+                        <i class="fas fa-hard-hat"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ stats.assigned }}</h3>
+                        <p>قيد التنفيذ (صنايعي)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card glass h-100">
+                    <div class="stat-icon bg-purple-gradient">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ stats.admin_visit }}</h3>
+                        <p>معاينة إدارية</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card glass h-100">
+                    <div class="stat-icon bg-success-gradient">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ stats.completed }}</h3>
+                        <p>مكتملة</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider mb-5"></div>
+
+        <!-- Requests List -->
+        <div class="glass rounded p-4 mb-5" data-aos="fade-up">
+            <h4 class="text-gold mb-4"><i class="fas fa-list me-2"></i> سجل الطلبات</h4>
+
+            {% if requests %}
+            <div class="table-responsive">
+                <table class="table text-white align-middle">
+                    <thead>
+                        <tr>
+                            <th>الحالة</th>
+                            <th>العميل</th>
+                            <th>الموقع</th>
+                            <th>الخدمة</th>
+                            <th>التاريخ</th>
+                            <th>المسؤول</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in requests %}
+                        <tr>
+                            <td>
+                                {% if req.status == 'new_request' %}
+                                <span class="badge bg-warning text-dark">جديد</span>
+                                {% elif req.status == 'assigned_to_worker' %}
+                                <span class="badge bg-primary">عند الصنايعي</span>
+                                {% elif req.status == 'admin_visit' %}
+                                <span class="badge bg-purple">معاينة إدارية</span>
+                                {% elif req.status == 'completed' %}
+                                <span class="badge bg-success">مكتمل</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ req.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ req.user_id }}</div>
+                                <div class="small text-muted">{{ req.user_phone }}</div>
+                            </td>
+                            <td>
+                                <div class="small">{{ req.governorate }} - {{ req.city }}</div>
+                                <div class="small text-muted text-truncate" style="max-width: 150px;">
+                                    {{ req.user_address }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-dark border border-secondary">{{ req.service_type }}</span>
+                            </td>
+                            <td class="small">{{ req.created_at[:16] }}</td>
+                            <td>
+                                {% if req.assigned_worker %}
+                                <span class="text-gold"><i class="fas fa-hard-hat me-1"></i> {{ req.assigned_worker
+                                    }}</span>
+                                {% elif req.inspection_by == 'admin' %}
+                                <span class="text-purple"><i class="fas fa-user-tie me-1"></i> الإدارة</span>
+                                {% else %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if req.status == 'new_request' %}
+                                <button class="btn btn-sm btn-gold" onclick="openAssignModal('{{ req.doc_id }}')">
+                                    <i class="fas fa-eye me-1"></i> التفاصيل / تعيين
+                                </button>
+                                {% elif req.status == 'inspection_done' %}
+                                <button class="btn btn-sm btn-info text-white"
+                                    onclick="openReportModal('{{ req.doc_id }}')">
+                                    <i class="fas fa-clipboard-check me-1"></i> مراجعة التقرير
+                                </button>
+                                {% elif req.status == 'assigned_to_worker' %}
+                                <span class="text-muted small">بانتظار التقرير</span>
+                                {% else %}
+                                <button class="btn btn-sm btn-outline-light"
+                                    onclick="openReportModal('{{ req.doc_id }}')">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3 opacity-25"></i>
+                <p class="text-muted">لا توجد طلبات معاينة</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Assign Modal -->
+<div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <h5 class="modal-title text-gold">تفاصيل الطلب وتعيين المسؤول</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Request Details -->
+                    <div class="col-lg-4 border-end border-secondary">
+                        <h6 class="text-white mb-3 border-bottom pb-2">بيانات الطلب</h6>
+
+                        <div class="mb-3">
+                            <label class="text-muted small">العنوان بالكامل</label>
+                            <div class="text-white" id="modalAddress"></div>
+                            <div class="text-gold small mt-1" id="modalRegion"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="text-muted small">نوع الخدمة</label>
+                            <div class="text-white fw-bold" id="modalService"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="text-muted small">وصف المشكلة</label>
+                            <div class="text-white description-box" id="modalDescription"></div>
+                        </div>
+
+                        <div class="mb-3" id="modalImagesContainer">
+                            <label class="text-muted small mb-2">الصور المرفقة</label>
+                            <div class="d-flex flex-wrap gap-2" id="modalImages"></div>
+                        </div>
+                    </div>
+
+                    <!-- Map and Assignment -->
+                    <div class="col-lg-8 ps-lg-4">
+                        <div class="mb-4">
+                            <div id="requestMap" style="height: 250px; border-radius: 10px;"></div>
+                        </div>
+
+                        <h6 class="text-white mb-3">اتخاذ القرار</h6>
+
+                        <form id="assignForm" method="POST">
+                            <input type="hidden" name="assignment_type" id="assignmentType">
+                            <input type="hidden" name="worker_username" id="selectedWorker">
+
+                            <div class="d-flex gap-3 mb-4">
+                                <button type="button" class="btn btn-outline-light flex-grow-1 assignment-option active"
+                                    data-type="worker" onclick="setAssignmentType('worker')">
+                                    <i class="fas fa-hard-hat fa-2x mb-2 d-block"></i>
+                                    تعيين صنايعي
+                                </button>
+                                <button type="button" class="btn btn-outline-light flex-grow-1 assignment-option"
+                                    data-type="admin" onclick="setAssignmentType('admin')">
+                                    <i class="fas fa-user-tie fa-2x mb-2 d-block"></i>
+                                    معاينة إدارية
+                                </button>
+                            </div>
+
+                            <!-- Workers List (Hidden for Admin choice) -->
+                            <div id="workersListSection">
+                                <h6 class="text-gold mb-3 small">أقرب صنايعية متاحين (بالمسافة)</h6>
+                                <div class="workers-grid mb-3" id="workersGrid">
+                                    <!-- Populated via JS -->
+                                    <div class="text-center py-3 text-muted">جاري البحث...</div>
+                                </div>
+                            </div>
+
+                            <div class="text-end border-top pt-3">
+                                <button type="button" class="btn btn-secondary me-2"
+                                    data-bs-dismiss="modal">إلغاء</button>
+                                <button type="submit" class="btn btn-gold px-4" id="confirmBtn" disabled>
+                                    تأكيد القرار
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Review Modal -->
+<div class="modal fade" id="reportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <h5 class="modal-title text-gold">تقرير المعاينة (مراجعة الإدارة)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Report Data -->
+                    <div class="col-md-7 border-end border-secondary">
+                        <h6 class="text-white mb-3"><i class="fas fa-images me-2"></i> صور المعاينة</h6>
+                        <div class="p-2 bg-black rounded mb-3 d-flex gap-2 overflow-auto" id="reportPhotos"></div>
+
+                        <h6 class="text-white mb-3 mt-4"><i class="fas fa-microphone me-2"></i> التسجيل الصوتي</h6>
+                        <audio id="reportAudio" controls class="w-100 mb-4"></audio>
+
+                        <h6 class="text-white mb-3 mt-4"><i class="fas fa-clipboard-list me-2"></i> التقييم</h6>
+                        <div class="d-flex justify-content-between mb-3">
+                            <div class="text-center">
+                                <small class="text-muted d-block">النوع</small>
+                                <span class="badge bg-secondary" id="repType">-</span>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted d-block">الحالة</small>
+                                <span class="badge bg-secondary" id="repStatus">-</span>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted d-block">الحجم</small>
+                                <span class="badge bg-secondary" id="repSize">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="col-md-5 ps-md-4">
+                        <div class="bg-dark p-3 rounded mb-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-hard-hat text-gold fa-2x me-3"></i>
+                                <div>
+                                    <div class="small text-muted">القائم بالمعاينة</div>
+                                    <div class="fw-bold text-white" id="repWorker">-</div>
+                                </div>
+                            </div>
+                            <div class="small text-muted" id="repDate">-</div>
+                        </div>
+
+                        <form id="approveForm" method="POST">
+                            <h6 class="text-gold mb-3">قرار الإدارة</h6>
+                            <div class="mb-3">
+                                <textarea name="admin_notes" class="form-control glass-input" rows="3"
+                                    placeholder="ملاحظات للإدارة (اختياري)"></textarea>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" name="decision" value="approve" class="btn btn-success">
+                                    <i class="fas fa-check-circle me-2"></i> اعتماد وكشف البيانات للعميل
+                                </button>
+                                <button type="submit" name="decision" value="reject" class="btn btn-outline-danger">
+                                    <i class="fas fa-times me-2"></i> رفض التقرير
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .admin-section-bg {
+        background: #0a0a0a;
+        min-height: 100vh;
+        padding-top: 100px;
+        direction: rtl;
+    }
+
+    .stat-card {
+        padding: 20px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #fff;
+    }
+
+    .bg-purple-gradient {
+        background: linear-gradient(135deg, #9c27b0, #ba68c8);
+    }
+
+    .bg-gold {
+        background-color: var(--gold);
+    }
+
+    .bg-purple {
+        background-color: #9c27b0;
+    }
+
+    .description-box {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        max-height: 100px;
+        overflow-y: auto;
+    }
+
+    .assignment-option {
+        border-style: dashed;
+        color: #888;
+    }
+
+    .assignment-option.active {
+        border-style: solid;
+        border-color: var(--gold);
+        color: var(--gold);
+        background: rgba(212, 175, 55, 0.1);
+    }
+
+    .worker-select-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .worker-select-card:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .worker-select-card.selected {
+        border-color: var(--gold);
+        background: rgba(212, 175, 55, 0.15);
+    }
+
+    .workers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        max-height: 250px;
+        overflow-y: auto;
+    }
+
+    .glass-modal {
+        background: #1a1a1a;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-input {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+</style>
+
+<script>
+    var map;
+    var marker;
+
+    function initMap() {
+        if (!map) {
+            map = L.map('requestMap').setView([30.0444, 31.2357], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        }
+    }
+
+    // Modal Handling
+    var assignModal = document.getElementById('assignModal');
+    assignModal.addEventListener('shown.bs.modal', function () {
+        initMap();
+        map.invalidateSize();
+    });
+
+    function openAssignModal(reqId) {
+        document.getElementById('assignForm').action = `/admin/inspection/${reqId}/assign`;
+        setAssignmentType('worker'); // Default
+
+        // Load Details
+        fetch(`/admin/inspection/${reqId}/details`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) return;
+
+                const req = data.request;
+                document.getElementById('modalAddress').textContent = req.user_address || 'عنوان غير محدد';
+                document.getElementById('modalRegion').textContent = `${req.governorate || '-'} / ${req.city || '-'}`;
+                document.getElementById('modalService').textContent = req.service_type;
+                document.getElementById('modalDescription').textContent = req.description || 'لا يوجد وصف';
+
+                // Images
+                const imgContainer = document.getElementById('modalImages');
+                imgContainer.innerHTML = '';
+                if (req.images && req.images.length > 0) {
+                    req.images.forEach(img => {
+                        imgContainer.innerHTML += `
+                            <a href="/static/${img}" target="_blank">
+                                <img src="/static/${img}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; border: 1px solid #444;">
+                            </a>`;
+                    });
+                    document.getElementById('modalImagesContainer').style.display = 'block';
+                } else {
+                    document.getElementById('modalImagesContainer').style.display = 'none';
+                }
+
+                // Map
+                if (req.user_latitude && req.user_longitude) {
+                    const latlng = [req.user_latitude, req.user_longitude];
+                    map.setView(latlng, 15);
+                    if (marker) map.removeLayer(marker);
+                    marker = L.marker(latlng).addTo(map);
+                }
+
+                // Workers
+                renderWorkers(data.nearby_workers);
+
+                var modal = new bootstrap.Modal(assignModal);
+                modal.show();
+            });
+    }
+
+    // Report Modal
+    var reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+
+    function openReportModal(reqId) {
+        document.getElementById('approveForm').action = `/admin/inspection/${reqId}/approve`;
+
+        fetch(`/admin/inspection/${reqId}/details`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) return;
+                const req = data.request;
+                const report = req.inspection_report || {};
+
+                // Set data
+                document.getElementById('repWorker').textContent = req.assigned_worker || 'الإدارة';
+                document.getElementById('repDate').textContent = report.submitted_at || '-';
+
+                // Badges
+                document.getElementById('repType').textContent = report.job_type || '-';
+                document.getElementById('repStatus').textContent = report.place_status || '-';
+                document.getElementById('repSize').textContent = report.job_size || '-';
+
+                // Audio
+                const audio = document.getElementById('reportAudio');
+                if (report.voice_note_url) {
+                    audio.src = "/static/" + report.voice_note_url;
+                    audio.style.display = 'block';
+                } else {
+                    audio.style.display = 'none';
+                }
+
+                // Photos
+                const photoBox = document.getElementById('reportPhotos');
+                photoBox.innerHTML = '';
+                if (report.photos && report.photos.length > 0) {
+                    report.photos.forEach(p => {
+                        photoBox.innerHTML += `
+                            <a href="/static/${p}" target="_blank">
+                                <img src="/static/${p}" style="height: 100px; border-radius: 5px; border: 1px solid #555;">
+                            </a>
+                        `;
+                    });
+                } else {
+                    photoBox.innerHTML = '<small class="text-muted">لا توجد صور</small>';
+                }
+
+                reportModal.show();
+            });
+    }
+
+    function renderWorkers(workers) {
+        const grid = document.getElementById('workersGrid');
+        grid.innerHTML = '';
+
+        if (workers.length === 0) {
+            grid.innerHTML = '<div class="text-center text-muted col-12">لا يوجد صنايعية متاحين في النطاق المحدد</div>';
+            return;
+        }
+
+        workers.forEach(item => {
+            const w = item.worker;
+            const dist = item.distance;
+
+            const div = document.createElement('div');
+            div.className = 'worker-select-card';
+            div.onclick = () => selectWorker(w.username, div);
+            div.innerHTML = `
+                <div class="d-flex justify-content-between">
+                    <div class="fw-bold text-white">${w.full_name}</div>
+                    <div class="text-gold small"><i class="fas fa-star"></i> 4.5</div>
+                </div>
+                <div class="small text-muted mt-1"><i class="fas fa-map-marker-alt"></i> يبعد ${dist} كم</div>
+                <div class="small text-success mt-1"><i class="fas fa-check-circle"></i> متاح</div>
+            `;
+            grid.appendChild(div);
+        });
+    }
+
+    function setAssignmentType(type) {
+        document.getElementById('assignmentType').value = type;
+        document.querySelectorAll('.assignment-option').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.assignment-option[data-type="${type}"]`).classList.add('active');
+
+        if (type === 'admin') {
+            document.getElementById('workersListSection').style.display = 'none';
+            document.getElementById('confirmBtn').disabled = false;
+        } else {
+            document.getElementById('workersListSection').style.display = 'block';
+            // Disable until worker selected
+            document.getElementById('confirmBtn').disabled = !document.getElementById('selectedWorker').value;
+        }
+    }
+
+    function selectWorker(username, element) {
+        document.getElementById('selectedWorker').value = username;
+        document.querySelectorAll('.worker-select-card').forEach(el => el.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('confirmBtn').disabled = false;
+    }
+</script>
+{% endblock %}
+{% endblock %}

@@ -147,8 +147,7 @@
                                         data-status="{{ worker.status }}" title="تعديل">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <form method="POST"
-                                        action="{{ url_for('delete_user_route', username=worker.username) }}"
+                                    <form method="POST" action="{{ url_for('delete_user', username=worker.username) }}"
                                         style="display: inline;"
                                         onsubmit="return confirm('هل أنت متأكد من حذف هذا العامل؟');">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">

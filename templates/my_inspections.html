@@ -1,0 +1,187 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding my-inspections-bg">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5" data-aos="fade-down">
+            <div>
+                <a href="{{ url_for('web.home') }}" class="btn btn-outline-light btn-sm mb-3">
+                    <i class="fas fa-arrow-right me-2"></i> العودة للرئيسية
+                </a>
+                <h2 class="section-title mb-0">طلبات المعاينة</h2>
+                <p class="text-muted mt-2">تتبع حالة طلباتك الحالية والسابقة</p>
+            </div>
+            <a href="{{ url_for('inspection.request_inspection') }}" class="btn btn-gold">
+                <i class="fas fa-plus me-2"></i> طلب جديد
+            </a>
+        </div>
+
+        {% if requests %}
+        <div class="row g-4">
+            {% for req in requests %}
+            <div class="col-lg-6" data-aos="fade-up">
+                <div class="inspection-card glass">
+                    <div class="card-header-custom d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="service-badge">
+                                <i class="fas fa-tools me-1"></i> {{ req.service_type }}
+                            </span>
+                            <div class="mt-2 text-white small">
+                                <i class="far fa-clock me-1"></i> {{ req.created_at[:16] }}
+                            </div>
+                        </div>
+                        <div>
+                            {% if req.status == 'pending' or req.status == 'assigned' %}
+                            <span class="status-badge bg-warning">
+                                <i class="fas fa-spinner fa-spin me-1"></i> جاري البحث
+                            </span>
+                            {% elif req.status == 'accepted' %}
+                            <span class="status-badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i> تم القبول
+                            </span>
+                            {% elif req.status == 'rejected' %}
+                            <span class="status-badge bg-danger">
+                                <i class="fas fa-times-circle me-1"></i> مرفوض
+                            </span>
+                            {% elif req.status == 'completed' %}
+                            <span class="status-badge bg-info">
+                                <i class="fas fa-check-double me-1"></i> مكتمل
+                            </span>
+                            {% elif req.status == 'cancelled' %}
+                            <span class="status-badge bg-secondary">
+                                <i class="fas fa-ban me-1"></i> ملغي
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card-body-custom">
+                        {% if req.description %}
+                        <p class="text-white opacity-75 mb-3">{{ req.description }}</p>
+                        {% endif %}
+
+                        <div class="location-info mb-3">
+                            <i class="fas fa-map-marker-alt text-gold me-2"></i>
+                            <span class="text-white small">{{ req.user_address or 'موقع محدد على الخريطة' }}</span>
+                        </div>
+
+                        {% if req.assigned_worker and req.status == 'accepted' %}
+                        <div class="worker-info glass-inner p-3 rounded">
+                            <h6 class="text-gold mb-2">الصنايعي المسؤول</h6>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="worker-avatar-small me-2">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-white fw-bold">{{ req.assigned_worker }}</div>
+                                        <a href="{{ url_for('rating.worker_profile', username=req.assigned_worker) }}"
+                                            class="text-gold small">View Profile</a>
+                                    </div>
+                                </div>
+                                <a href="{{ url_for('chat.chat_page') }}" class="btn btn-sm btn-outline-light">
+                                    <i class="fas fa-comment me-1"></i> محادثة
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state glass p-5 text-center" data-aos="fade-up">
+            <div class="icon-circle mb-4">
+                <i class="fas fa-clipboard-list"></i>
+            </div>
+            <h3 class="text-white">لا توجد طلبات معاينة</h3>
+            <p class="text-muted mb-4">لم تقم بطلب أي معاينة حتى الآن</p>
+            <a href="{{ url_for('inspection.request_inspection') }}" class="btn btn-gold">
+                ابدأ الآن واطلب صنايعي
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+    .my-inspections-bg {
+        background: #0a0a0a;
+        min-height: 100vh;
+        padding-top: 100px;
+    }
+
+    .inspection-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+
+    .inspection-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(212, 175, 55, 0.3);
+    }
+
+    .card-header-custom {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .card-body-custom {
+        padding: 20px;
+    }
+
+    .service-badge {
+        background: rgba(212, 175, 55, 0.1);
+        color: var(--gold);
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        color: #000;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .glass-inner {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .worker-avatar-small {
+        width: 40px;
+        height: 40px;
+        background: var(--gold);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000;
+    }
+
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-size: 2rem;
+        color: var(--gold);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+</style>
+{% endblock %}

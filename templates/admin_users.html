@@ -27,43 +27,41 @@
                         <i class="fas fa-users"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>{{ users|length }}</h3>
-                        <p>إجمالي العملاء</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-3 col-md-6">
-                <div class="stat-card glass h-100">
-                    <div class="stat-icon bg-success-gradient">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-info">
-                        <h3>{{ users|selectattr('project_percentage', 'equalto', 100)|list|length }}</h3>
-                        <p>مشاريع مكتملة</p>
+                        <h3>{{ analytics.total_users }}</h3>
+                        <p>إجمالي المستخدمين</p>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="stat-card glass h-100">
                     <div class="stat-icon bg-warning-gradient">
-                        <i class="fas fa-spinner"></i>
+                        <i class="fas fa-clipboard-list"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>{{ users|rejectattr('project_percentage', 'equalto', 100)|list|length }}</h3>
-                        <p>مشاريع جارية</p>
+                        <h3>{{ analytics.total_requests }}</h3>
+                        <p>طلبات المعاينة</p>
                     </div>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="stat-card glass h-100">
-                    <div class="stat-icon bg-purple-gradient">
-                        <i class="fas fa-chart-line"></i>
+                    <div class="stat-icon bg-success-gradient">
+                        <i class="fas fa-percentage"></i>
                     </div>
                     <div class="stat-info">
-                        {% set avg = (users|sum(attribute='project_percentage')/users|length)|round|int if users|length
-                        > 0 else 0 %}
-                        <h3>{{ avg }}%</h3>
-                        <p>متوسط الإنجاز</p>
+                        <h3>{{ analytics.conversion_rate }}%</h3>
+                        <p>نسبة التحويل</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card glass h-100">
+                    <div class="stat-icon bg-danger-gradient">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>{{ analytics.pending_questions }}</h3>
+                        <p>أسئلة بانتظار الرد</p>
                     </div>
                 </div>
             </div>
@@ -137,8 +135,7 @@
                                         data-percentage="{{ user.project_percentage }}" title="تحديث النسبة">
                                         <i class="fas fa-percentage"></i>
                                     </button>
-                                    <form method="POST"
-                                        action="{{ url_for('delete_user_route', username=user.username) }}"
+                                    <form method="POST" action="{{ url_for('delete_user', username=user.username) }}"
                                         style="display: inline;"
                                         onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟');">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
@@ -156,6 +153,232 @@
             <div class="empty-state">
                 <i class="fas fa-users fa-3x mb-3 opacity-25"></i>
                 <p>لا يوجد عملاء مسجلين</p>
+            </div>
+            {% endif %}\r
+        </div>
+
+        <div class="divider mb-5"></div>
+
+        <!-- Contact Requests Section -->
+        <div class="mb-5" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-gold"><i class="fas fa-clipboard-list me-2"></i> طلبات المعاينة الأخيرة</h3>
+                <span class="badge bg-warning">{{ messages|length }} طلب</span>
+            </div>
+
+            {% if messages %}
+            <div class="table-responsive">
+                <table class="table modern-table">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>الهاتف</th>
+                            <th>الخدمة</th>
+                            <th>الرسالة</th>
+                            <th>التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for msg in messages %}
+                        <tr>
+                            <td class="fw-bold text-white">{{ msg.name }}</td>
+                            <td dir="ltr">{{ msg.phone }}</td>
+                            <td><span class="badge bg-info">{{ msg.service or 'عام' }}</span></td>
+                            <td class="text-truncate" style="max-width: 300px;">{{ msg.message }}</td>
+                            <td class="small">{{ msg.created_at[:10] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                <p>لا توجد طلبات معاينة</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="divider mb-5"></div>
+
+        <!-- Unanswered Questions Section -->
+        {% if unanswered %}
+        <div class="mb-5" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-gold"><i class="fas fa-question-circle me-2"></i> أسئلة بانتظار الرد</h3>
+                <span class="badge bg-danger">{{ unanswered|length }} سؤال</span>
+            </div>
+
+            {% for q in unanswered %}
+            <div class="question-card glass mb-3">
+                <div class="question-header">
+                    <strong class="text-gold">{{ q.user_id }}</strong>
+                    <span class="small text-muted">{{ q.timestamp }}</span>
+                </div>
+                <div class="question-body">
+                    <p class="mb-2"><strong>السؤال:</strong> {{ q.question }}</p>
+                    <form method="POST" action="{{ url_for('admin.answer_question') }}">
+                        <input type="hidden" name="question" value="{{ q.question }}">
+                        <div class="mb-2">
+                            <textarea name="answer" class="form-control" rows="2" placeholder="اكتب الإجابة هنا..."
+                                required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-gold">
+                            <i class="fas fa-check me-1"></i> حفظ الإجابة
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="divider mb-5"></div>
+
+        <!-- Advanced Analytics Section -->
+        <div class="mb-5" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-gold"><i class="fas fa-chart-bar me-2"></i> الإحصائيات المتقدمة</h3>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <!-- Project Status -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="analytics-card glass">
+                        <h6 class="text-white mb-3">
+                            <i class="fas fa-tasks text-gold me-2"></i>
+                            حالة المشاريع
+                        </h6>
+                        <div class="analytics-item">
+                            <span class="analytics-label">
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                مكتملة
+                            </span>
+                            <span class="analytics-value text-success">{{ analytics.completed_projects }}</span>
+                        </div>
+                        <div class="analytics-item">
+                            <span class="analytics-label">
+                                <i class="fas fa-spinner text-warning me-1"></i>
+                                جارية
+                            </span>
+                            <span class="analytics-value text-warning">{{ analytics.ongoing_projects }}</span>
+                        </div>
+                        <div class="analytics-item">
+                            <span class="analytics-label">
+                                <i class="fas fa-pause-circle text-secondary me-1"></i>
+                                لم تبدأ
+                            </span>
+                            <span class="analytics-value text-secondary">{{ analytics.not_started }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Activity -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="analytics-card glass">
+                        <h6 class="text-white mb-3">
+                            <i class="fas fa-users text-gold me-2"></i>
+                            نشاط المستخدمين
+                        </h6>
+                        <div class="analytics-item">
+                            <span class="analytics-label">
+                                <i class="fas fa-user-check text-info me-1"></i>
+                                مستخدمين نشطين
+                            </span>
+                            <span class="analytics-value text-info">{{ analytics.active_users }}</span>
+                        </div>
+                        <div class="analytics-item">
+                            <span class="analytics-label">
+                                <i class="fas fa-chart-line text-gold me-1"></i>
+                                متوسط الإنجاز
+                            </span>
+                            <span class="analytics-value text-gold">{{ analytics.avg_completion }}%</span>
+                        </div>
+                        <div class="analytics-item">
+                            <span class="analytics-label">
+                                <i class="fas fa-comments text-primary me-1"></i>
+                                طلبات معاينة
+                            </span>
+                            <span class="analytics-value text-primary">{{ analytics.total_requests }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="analytics-card glass">
+                        <h6 class="text-white mb-3">
+                            <i class="fas fa-money-bill-wave text-gold me-2"></i>
+                            عمليات الدفع
+                        </h6>
+                        <div class="analytics-item">
+                            <span class="analytics-label">
+                                <i class="fas fa-credit-card text-success me-1"></i>
+                                إجمالي العمليات
+                            </span>
+                            <span class="analytics-value text-success">{{ analytics.total_payments }}</span>
+                        </div>
+                        <div class="analytics-item">
+                            <span class="analytics-label">
+                                <i class="fas fa-percentage text-gold me-1"></i>
+                                نسبة التحويل
+                            </span>
+                            <span class="analytics-value text-gold">{{ analytics.conversion_rate }}%</span>
+                        </div>
+                        <div class="analytics-item">
+                            <span class="analytics-label">
+                                <i class="fas fa-question-circle text-danger me-1"></i>
+                                أسئلة معلقة
+                            </span>
+                            <span class="analytics-value text-danger">{{ analytics.pending_questions }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Records -->
+        <div class="divider mb-5"></div>
+
+        <div class="mb-5" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-gold"><i class="fas fa-money-bill-wave me-2"></i> عمليات الدفع الأخيرة</h3>
+                {% if payments %}
+                <span class="badge bg-success">{{ payments|length }} عملية</span>
+                {% else %}
+                <span class="badge bg-secondary">لا توجد عمليات</span>
+                {% endif %}
+            </div>
+
+            {% if payments %}
+            <div class="table-responsive">
+                <table class="table modern-table">
+                    <thead>
+                        <tr>
+                            <th>المستخدم</th>
+                            <th>المبلغ</th>
+                            <th>الوسيلة</th>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payments %}
+                        <tr>
+                            <td class="fw-bold text-white">{{ p.username }}</td>
+                            <td class="text-gold fw-bold">{{ p.amount }} ج.م</td>
+                            <td><span class="badge bg-primary">{{ p.method }}</span></td>
+                            <td class="small">{{ p.timestamp[:10] }}</td>
+                            <td><span class="badge bg-success">{{ p.status or 'قيد المراجعة' }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-wallet fa-3x mb-3 opacity-25"></i>
+                <p>لا توجد عمليات دفع من المستخدمين</p>
             </div>
             {% endif %}
         </div>
@@ -199,7 +422,7 @@
                             <textarea name="project_description" class="form-control" rows="3"></textarea>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">صورة الملف الشخصي</label>
+                            <label class="form-label">صورة الملف الشخصي (اختياري)</label>
                             <input type="file" name="profile_image" class="form-control" accept="image/*">
                         </div>
                         <input type="hidden" name="role" value="user">
@@ -349,6 +572,46 @@
         color: var(--gold);
     }
 
+    /* Analytics Cards */
+    .analytics-card {
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.02);
+        height: 100%;
+    }
+
+    .analytics-card h6 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .analytics-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .analytics-item:last-child {
+        border-bottom: none;
+    }
+
+    .analytics-label {
+        color: #ddd;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .analytics-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
     /* Progress Wrapper */
     .progress-wrapper {
         display: flex;
@@ -439,6 +702,42 @@
         font-weight: 500;
     }
 
+    /* Question Cards */
+    .question-card {
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .question-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .question-body {
+        color: #ddd;
+    }
+
+    .question-body p {
+        color: #fff;
+    }
+
+    .question-body .form-control {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .question-body .form-control:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--gold);
+        color: #fff;
+    }
+
     /* Buttons */
     .btn-gold {
         background: var(--gold);
@@ -469,6 +768,99 @@
         text-align: center;
         padding: 60px 20px;
         color: #666;
+    }
+
+    /* Modal Enhancements */
+    .border-bottom-gold {
+        border-bottom: 2px solid rgba(212, 175, 55, 0.3) !important;
+    }
+
+    .border-top-gold {
+        border-top: 2px solid rgba(212, 175, 55, 0.3) !important;
+    }
+
+    .divider-small {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+    }
+
+    .modal-dialog-centered {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 1rem);
+    }
+
+    .glass-modal .form-label {
+        color: #ddd;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .glass-modal .form-label i {
+        color: var(--gold);
+        opacity: 0.8;
+    }
+
+    .glass-modal h6 {
+        font-size: 1rem;
+        font-weight: 600;
+        padding-bottom: 10px;
+    }
+
+    .file-upload-wrapper {
+        position: relative;
+    }
+
+    .file-upload-wrapper .form-control {
+        cursor: pointer;
+    }
+
+    .file-upload-wrapper .form-control:hover {
+        border-color: var(--gold);
+    }
+
+    .glass-modal input::placeholder,
+    .glass-modal textarea::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 0.85rem;
+    }
+
+    /* Enhanced Button Styling */
+    .btn-gold {
+        background: linear-gradient(135deg, #FFD700, #D4AF37) !important;
+        color: #000 !important;
+        font-weight: 700;
+        border: none;
+        padding: 10px 25px;
+        font-size: 1rem;
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        transition: all 0.3s ease;
+    }
+
+    .btn-gold:hover {
+        background: linear-gradient(135deg, #FFF200, #FFD700) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(212, 175, 55, 0.6);
+        color: #000 !important;
+    }
+
+    .btn-gold:active {
+        transform: translateY(0);
+    }
+
+    .modal-footer .btn-secondary {
+        background: rgba(108, 117, 125, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        font-weight: 600;
+        padding: 10px 25px;
+        transition: all 0.3s ease;
+    }
+
+    .modal-footer .btn-secondary:hover {
+        background: rgba(108, 117, 125, 1);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-2px);
     }
 </style>
 

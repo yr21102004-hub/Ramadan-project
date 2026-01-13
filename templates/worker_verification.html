@@ -1,0 +1,296 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding verification-bg">
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="glass-card p-4 p-md-5">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <div class="icon-circle mb-3">
+                            <i class="fas fa-id-card"></i>
+                        </div>
+                        <h3 class="text-gold">توثيق الحساب</h3>
+                        <p class="text-white opacity-75">لضمان المصداقية وحماية حقوقك، يرجى استكمال بيانات التوثيق</p>
+                    </div>
+
+                    <form id="verificationForm" enctype="multipart/form-data">
+                        <!-- Step 1: ID Card -->
+                        <div class="step-section mb-5" data-step="1">
+                            <h5 class="text-gold mb-3 border-bottom pb-2">1️⃣ إثبات الهوية (بطاقة الرقم القومي)</h5>
+
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <label class="d-block text-white mb-2 small">صورة البطاقة (الوجه)</label>
+                                    <div class="upload-box" onclick="document.getElementById('idFront').click()">
+                                        <div id="previewFront" class="preview-area">
+                                            <i class="fas fa-camera fa-2x mb-2 text-muted"></i>
+                                            <div class="small text-muted">اضغط للتصوير</div>
+                                        </div>
+                                    </div>
+                                    <input type="file" name="id_front" id="idFront" accept="image/*"
+                                        capture="environment" hidden required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="d-block text-white mb-2 small">صورة البطاقة (الخلف)</label>
+                                    <div class="upload-box" onclick="document.getElementById('idBack').click()">
+                                        <div id="previewBack" class="preview-area">
+                                            <i class="fas fa-camera fa-2x mb-2 text-muted"></i>
+                                            <div class="small text-muted">اضغط للتصوير</div>
+                                        </div>
+                                    </div>
+                                    <input type="file" name="id_back" id="idBack" accept="image/*" capture="environment"
+                                        hidden required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Selfie -->
+                        <div class="step-section mb-5" data-step="2">
+                            <h5 class="text-gold mb-3 border-bottom pb-2">2️⃣ صورة شخصية (سيلفي)</h5>
+                            <p class="text-white-50 small mb-3">يرجى التقاط صورة واضحة لوجهك الآن (بدون نظارة شمسية)</p>
+
+                            <div class="text-center">
+                                <div class="upload-box selfie-box mx-auto"
+                                    onclick="document.getElementById('selfie').click()">
+                                    <div id="previewSelfie" class="preview-area">
+                                        <i class="fas fa-user mb-2 text-muted" style="font-size: 3rem;"></i>
+                                        <div class="small text-muted">اضغط لالتقاط سيلفي</div>
+                                    </div>
+                                </div>
+                                <input type="file" name="selfie" id="selfie" accept="image/*" capture="user" hidden
+                                    required>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Work Proof -->
+                        <div class="step-section mb-5" data-step="3">
+                            <h5 class="text-gold mb-3 border-bottom pb-2">3️⃣ إثبات المهنة</h5>
+                            <p class="text-white-50 small mb-3">اختر طريقة واحدة لإثبات مهنتك</p>
+
+                            <div class="mb-3">
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="proof_type" id="proofPhotos"
+                                        value="photos" checked>
+                                    <label class="btn btn-outline-gold" for="proofPhotos"
+                                        onclick="toggleProof('photos')">
+                                        <i class="fas fa-images me-1"></i> صور شغل
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="proof_type" id="proofVideo"
+                                        value="video">
+                                    <label class="btn btn-outline-gold" for="proofVideo" onclick="toggleProof('video')">
+                                        <i class="fas fa-video me-1"></i> فيديو تعريفي
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Photos Input -->
+                            <div id="photosInputSection">
+                                <div class="upload-box" onclick="document.getElementById('workPhotos').click()">
+                                    <div class="text-center">
+                                        <i class="fas fa-cloud-upload-alt fa-2x mb-2 text-gold"></i>
+                                        <p class="mb-0 text-white small">اختر 3-5 صور من أعمالك السابقة</p>
+                                    </div>
+                                </div>
+                                <input type="file" name="work_photos" id="workPhotos" accept="image/*" multiple hidden>
+                                <div id="photosPreview" class="d-flex gap-2 mt-3 overflow-auto"></div>
+                            </div>
+
+                            <!-- Video Input -->
+                            <div id="videoInputSection" style="display: none;">
+                                <div class="upload-box" onclick="document.getElementById('workVideo').click()">
+                                    <div class="text-center">
+                                        <i class="fas fa-video fa-2x mb-2 text-gold"></i>
+                                        <p class="mb-0 text-white small">سجل فيديو قصير (30 ثانية) تعرف فيه عن نفسك
+                                            وشغلك</p>
+                                    </div>
+                                </div>
+                                <input type="file" name="work_video" id="workVideo" accept="video/*"
+                                    capture="environment" hidden>
+                                <div id="videoPreviewName" class="text-gold small mt-2"></div>
+                            </div>
+                        </div>
+
+                        <!-- Location & Submit -->
+                        <div class="step-section">
+                            <input type="hidden" name="latitude" id="lat">
+                            <input type="hidden" name="longitude" id="lng">
+
+                            <button type="submit" class="btn btn-gold w-100 py-3 fw-bold" id="submitBtn">
+                                <i class="fas fa-check-circle me-2"></i> تقديم طلب التوثيق
+                            </button>
+                            <p class="text-center text-muted small mt-2">سيتم مراجعة الطلب خلال 24 ساعة</p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .verification-bg {
+        background: #0a0a0a;
+        min-height: 100vh;
+        padding-top: 100px;
+    }
+
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+    }
+
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        background: rgba(212, 175, 55, 0.1);
+        border: 2px solid var(--gold);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-size: 2rem;
+        color: var(--gold);
+    }
+
+    .upload-box {
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .upload-box:hover {
+        border-color: var(--gold);
+        background: rgba(212, 175, 55, 0.05);
+    }
+
+    .selfie-box {
+        height: 200px;
+        width: 200px;
+        border-radius: 50%;
+    }
+
+    .preview-area {
+        text-align: center;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .preview-thumb {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 1px solid #555;
+    }
+</style>
+
+<script>
+    // Image Previews
+    function setupPreview(inputId, previewId) {
+        document.getElementById(inputId).addEventListener('change', function (e) {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const box = document.getElementById(previewId);
+                    box.innerHTML = `<img src="${e.target.result}" class="preview-img">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    setupPreview('idFront', 'previewFront');
+    setupPreview('idBack', 'previewBack');
+    setupPreview('selfie', 'previewSelfie');
+
+    // Toggle Proof Type
+    function toggleProof(type) {
+        if (type === 'photos') {
+            document.getElementById('photosInputSection').style.display = 'block';
+            document.getElementById('videoInputSection').style.display = 'none';
+        } else {
+            document.getElementById('photosInputSection').style.display = 'none';
+            document.getElementById('videoInputSection').style.display = 'block';
+        }
+    }
+
+    // Work Photos Preview
+    document.getElementById('workPhotos').addEventListener('change', function (e) {
+        const container = document.getElementById('photosPreview');
+        container.innerHTML = '';
+        Array.from(this.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'preview-thumb';
+                container.appendChild(img);
+            }
+            reader.readAsDataURL(file);
+        });
+    });
+
+    // Capture Location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+            document.getElementById('lat').value = position.coords.latitude;
+            document.getElementById('lng').value = position.coords.longitude;
+        });
+    }
+
+    // Form Submit
+    document.getElementById('verificationForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري الرفع...';
+
+        const formData = new FormData(this);
+
+        fetch("{{ url_for('auth.submit_verification') }}", {
+            method: 'POST',
+            body: formData
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('تم إرسال طلب التوثيق بنجاح! سيقوم المدير بمراجعة طلبك.');
+                    window.location.href = "{{ url_for('web.home') }}";
+                } else {
+                    alert('حدث خطأ: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = 'تقديم طلب التوثيق';
+                }
+            })
+            .catch(err => {
+                alert('فشل الاتصال بالخادم');
+                btn.disabled = false;
+            });
+    });
+</script>
+{% endblock %}

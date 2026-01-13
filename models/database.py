@@ -47,6 +47,18 @@ class Database:
     @property
     def learned_answers(self):
         return self.db.table('learned_answers')
+    
+    @property
+    def ratings(self):
+        return self.db.table('ratings')
+    
+    @property
+    def complaints(self):
+        return self.db.table('complaints')
+    
+    @property
+    def inspection_requests(self):
+        return self.db.table('inspection_requests')
 
 
 
@@ -82,6 +94,32 @@ class UserModel:
     def get_all_except_admin(self):
         """Get all users except admin"""
         return [u for u in self.table.all() if u.get('role') != 'admin']
+
+    def submit_verification(self, username, data):
+        """Submit worker verification documents"""
+        update_data = {
+            'verification_status': 'pending',
+            'id_card_front': data.get('id_card_front'),
+            'id_card_back': data.get('id_card_back'),
+            'selfie_image': data.get('selfie_image'),
+            'work_proof_type': data.get('work_proof_type'),
+            'work_proof_files': data.get('work_proof_files', []),
+            'verification_submitted_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        return self.table.update(update_data, self.query.username == username)
+
+    def verify_user(self, username, status='verified', notes=''):
+        """Approve or Reject verification"""
+        update_data = {
+            'verification_status': status,
+            'verified_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'admin_notes': notes
+        }
+        return self.table.update(update_data, self.query.username == username)
+
+    def get_pending_verifications(self):
+        """Get all users with pending verification"""
+        return self.table.search(self.query.verification_status == 'pending')
 
 
 class ChatModel:

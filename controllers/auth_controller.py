@@ -111,3 +111,54 @@ def reset_new_password():
         return redirect(url_for('auth.login'))
         
     return render_template('reset_new_password.html')
+
+@auth_bp.route('/verify/worker', methods=['GET', 'POST'])
+@login_required
+def submit_verification():
+    """Submit worker verficiation documents"""
+    if current_user.role != 'worker':
+        return redirect(url_for('web.home'))
+        
+    if request.method == 'POST':
+        try:
+            import os
+            from werkzeug.utils import secure_filename
+            
+            # Helper to save file
+            def save_file(file, subfolder):
+                if not file: return None
+                filename = secure_filename(f"{current_user.username}_{file.filename}")
+                path = os.path.join(f"static/uploads/{subfolder}", filename)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                file.save(path)
+                return f"uploads/{subfolder}/{filename}"
+
+            data = {
+                'id_card_front': save_file(request.files.get('id_front'), 'verification'),
+                'id_card_back': save_file(request.files.get('id_back'), 'verification'),
+                'selfie_image': save_file(request.files.get('selfie'), 'verification'),
+                'work_proof_type': request.form.get('proof_type')
+            }
+            
+            # Proof Files
+            proof_files = []
+            if 'work_photos' in request.files:
+                for f in request.files.getlist('work_photos'):
+                    if f.filename:
+                        proof_files.append(save_file(f, 'work_proof'))
+            
+            if 'work_video' in request.files:
+                video = request.files.get('work_video')
+                if video and video.filename:
+                    proof_files.append(save_file(video, 'work_proof'))
+            
+            data['work_proof_files'] = proof_files
+            
+            user_model.submit_verification(current_user.username, data)
+            return {'success': True}
+            
+        except Exception as e:
+            print(e)
+            return {'success': False, 'message': str(e)}
+
+    return render_template('worker_verification.html')

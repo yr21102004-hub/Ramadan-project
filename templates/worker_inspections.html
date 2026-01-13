@@ -1,0 +1,407 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<section class="section-padding worker-inspections-bg">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5" data-aos="fade-down">
+            <div>
+                <a href="{{ url_for('web.home') }}" class="btn btn-outline-light btn-sm mb-3">
+                    <i class="fas fa-arrow-right me-2"></i> العودة للرئيسية
+                </a>
+                <h2 class="section-title mb-0">طلبات المعاينة الواردة</h2>
+                <p class="text-muted mt-2">إدارة طلبات المعاينة الجديدة والسابقة</p>
+            </div>
+            <button class="btn btn-outline-gold" data-bs-toggle="modal" data-bs-target="#locationSettingsModal">
+                <i class="fas fa-cog me-2"></i> إعدادات الموقع
+            </button>
+        </div>
+
+        <!-- Pending Requests -->
+        {% if pending %}
+        <div class="mb-5">
+            <h4 class="text-gold mb-4"><i class="fas fa-bell me-2"></i> طلبات جديدة ({{ pending|length }})</h4>
+            <div class="row g-4">
+                {% for req in pending %}
+                <div class="col-lg-6" data-aos="fade-right">
+                    <div class="request-card glass border-warning">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="text-white mb-0">{{ req.service_type }}</h5>
+                            <span class="badge bg-warning text-dark">جديد</span>
+                        </div>
+
+                        <div class="info-row">
+                            <i class="fas fa-user text-gold"></i>
+                            <span>{{ req.user_id }}</span>
+                        </div>
+                        <div class="info-row">
+                            <i class="fas fa-map-marker-alt text-gold"></i>
+                            <span>{{ req.user_address or 'موقع على الخريطة' }}</span>
+                        </div>
+                        <div class="info-row">
+                            <i class="far fa-clock text-gold"></i>
+                            <span>{{ req.created_at }}</span>
+                        </div>
+
+                        {% if req.description %}
+                        <div class="description-box mt-3">
+                            {{ req.description }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Map Preview -->
+                        <div id="map-{{ req.doc_id }}" class="mini-map mt-3"></div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                var map = L.map('map-{{ req.doc_id }}', {
+                                    attributionControl: false,
+                                    zoomControl: false
+                                }).setView([{{ req.user_latitude }}, {{ req.user_longitude }}], 13);
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                            L.marker([{{ req.user_latitude }}, {{ req.user_longitude }}]).addTo(map);
+                            });
+                        </script>
+
+                        <div class="action-buttons mt-4">
+                            <form method="POST"
+                                action="{{ url_for('inspection.respond_inspection', request_id=req.doc_id) }}"
+                                class="d-flex w-100 gap-2">
+                                <button type="submit" name="action" value="accept" class="btn btn-gold flex-grow-1">
+                                    <i class="fas fa-check me-2"></i> قبول
+                                </button>
+                                <button type="button" class="btn btn-outline-danger flex-grow-1"
+                                    onclick="showRejectModal('{{ req.doc_id }}')">
+                                    <i class="fas fa-times me-2"></i> رفض
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="divider mb-5"></div>
+
+        <!-- Accepted/Ongoing Requests -->
+        {% set accepted_requests = others | selectattr("status", "equalto", "accepted") | list %}
+        {% if accepted_requests %}
+        <h4 class="text-gold mb-4"><i class="fas fa-play-circle me-2"></i> معاينات قيد التنفيذ ({{
+            accepted_requests|length }})</h4>
+        <div class="row g-4 mb-5">
+            {% for req in accepted_requests %}
+            <div class="col-lg-6" data-aos="fade-up">
+                <div class="request-card glass border-success">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-white mb-0">{{ req.service_type }}</h5>
+                        <span class="badge bg-success">تم القبول</span>
+                    </div>
+
+                    <div class="info-row">
+                        <i class="fas fa-user text-gold"></i>
+                        <span>{{ req.user_id }}</span>
+                    </div>
+                    <div class="info-row">
+                        <i class="fas fa-map-marker-alt text-gold"></i>
+                        <span>{{ req.user_address }}</span>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('inspection.submit_report', request_id=req.doc_id) }}"
+                            class="btn btn-gold w-100 py-3">
+                            <i class="fas fa-camera me-2"></i> بدء المعاينة وكتابة التقرير
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        (٪ set others = others | rejectattr("status", "equalto", "accepted") | list %)
+        {% endif %}
+
+        <!-- History -->
+        <h4 class="text-white mb-4"><i class="fas fa-history me-2"></i> السجل السابق</h4>
+        {% if others %}
+        <div class="table-responsive glass rounded p-3">
+            <table class="table text-white mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-gold">الخدمة</th>
+                        <th class="text-gold">العميل</th>
+                        <th class="text-gold">التاريخ</th>
+                        <th class="text-gold">الحالة</th>
+                        <th class="text-gold">الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in others %}
+                    {% if req.status != 'accepted' %}
+                    <tr>
+                        <td>{{ req.service_type }}</td>
+                        <td>{{ req.user_id }}</td>
+                        <td>{{ req.created_at[:10] }}</td>
+                        <td>
+                            {% if req.status == 'rejected' %}
+                            <span class="badge bg-danger">مرفوض</span>
+                            {% elif req.status == 'inspection_done' %}
+                            <span class="badge bg-info">تمت المعاينة (بانتظار الموافقة)</span>
+                            {% elif req.status == 'approved_for_user' %}
+                            <span class="badge bg-success">تم الاعتماد</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ req.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if req.status == 'approved_for_user' %}
+                            <a href="{{ url_for('chat.chat_page') }}" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-comment"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+            <p>لا يوجد سجل سابق</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <h5 class="modal-title">رفض الطلب</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="rejectForm" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="reject">
+                    <label class="form-label text-white">سبب الرفض</label>
+                    <select name="reason" class="form-select glass-input mb-3">
+                        <option value="busy">مشغول حالياً</option>
+                        <option value="distance">المكان بعيد</option>
+                        <option value="equipment">لا تتوفر المعدات</option>
+                        <option value="other">سبب آخر</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">تأكيد الرفض</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Location Settings Modal -->
+<div class="modal fade" id="locationSettingsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <h5 class="modal-title text-gold">إعدادات الموقع واستقبال الطلبات</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="locationSettingsForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-white">المحافظة</label>
+                            <select id="governorateSelect" class="form-select glass-input" required>
+                                <option value="">اختر المحافظة</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white">المدينة / المركز</label>
+                            <select id="citySelect" class="form-select glass-input" required>
+                                <option value="">اختر المدينة</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white">حدد موقعك الدقيق</label>
+                        <div id="settingsMap" style="height: 300px; border-radius: 10px;"></div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-white">أقصى مسافة لاستقبال الطلبات (كم)</label>
+                            <input type="number" id="maxDistance" class="form-control glass-input" value="50">
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="availableSwitch" checked>
+                                <label class="form-check-label text-white" for="availableSwitch">متاح لاستقبال
+                                    المعاينات</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-gold w-100" id="saveLocationBtn">حفظ الإعدادات</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .worker-inspections-bg {
+        background: #111;
+        min-height: 100vh;
+        padding-top: 100px;
+    }
+
+    .request-card {
+        padding: 25px;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .border-warning {
+        border-color: rgba(255, 193, 7, 0.3) !important;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #ddd;
+        margin-bottom: 8px;
+    }
+
+    .description-box {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 10px;
+        border-radius: 8px;
+        color: #ccc;
+        font-size: 0.9rem;
+    }
+
+    .mini-map {
+        height: 150px;
+        width: 100%;
+        border-radius: 10px;
+        z-index: 1;
+    }
+
+    .glass-modal {
+        background: #1a1a1a;
+        color: #fff;
+    }
+
+    .glass-input {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+    }
+
+    .glass-input option {
+        background: #1a1a1a;
+    }
+</style>
+
+<script>
+    function showRejectModal(reqId) {
+        document.getElementById('rejectForm').action = "/inspection/" + reqId + "/respond";
+        var modal = new bootstrap.Modal(document.getElementById('rejectModal'));
+        modal.show();
+    }
+
+    // Settings Map Logic
+    var settingsMap, settingsMarker;
+    var settingsModal = document.getElementById('locationSettingsModal');
+
+    settingsModal.addEventListener('shown.bs.modal', function () {
+        if (!settingsMap) {
+            settingsMap = L.map('settingsMap').setView([30.0444, 31.2357], 10);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(settingsMap);
+
+            settingsMap.on('click', function (e) {
+                if (settingsMarker) settingsMap.removeLayer(settingsMarker);
+                settingsMarker = L.marker(e.latlng).addTo(settingsMap);
+            });
+
+            // Load Governorates
+            fetch('/api/governorates')
+                .then(r => r.json())
+                .then(data => {
+                    const select = document.getElementById('governorateSelect');
+                    data.forEach(gov => {
+                        const opt = document.createElement('option');
+                        opt.value = gov;
+                        opt.textContent = gov;
+                        select.appendChild(opt);
+                    });
+                });
+        }
+        setTimeout(function () { settingsMap.invalidateSize(); }, 100);
+    });
+
+    document.getElementById('governorateSelect').addEventListener('change', function () {
+        const gov = this.value;
+        const citySelect = document.getElementById('citySelect');
+        citySelect.innerHTML = '<option value="">اختر المدينة</option>';
+
+        if (gov) {
+            fetch('/api/cities/' + gov)
+                .then(r => r.json())
+                .then(data => {
+                    data.forEach(city => {
+                        const opt = document.createElement('option');
+                        opt.value = city;
+                        opt.textContent = city;
+                        citySelect.appendChild(opt);
+                    });
+                });
+        }
+    });
+
+    document.getElementById('saveLocationBtn').addEventListener('click', function () {
+        if (!settingsMarker) {
+            alert('يرجى تحديد موقعك على الخريطة');
+            return;
+        }
+
+        const latlng = settingsMarker.getLatLng();
+        const data = {
+            governorate: document.getElementById('governorateSelect').value,
+            city: document.getElementById('citySelect').value,
+            latitude: latlng.lat,
+            longitude: latlng.lng,
+            gps_active: true,
+            max_distance: document.getElementById('maxDistance').value,
+            available: document.getElementById('availableSwitch').checked
+        };
+
+        fetch('/worker/settings/location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(r => r.json())
+            .then(response => {
+                if (response.success) {
+                    alert(response.message);
+                    var modal = bootstrap.Modal.getInstance(settingsModal);
+                    modal.hide();
+                } else {
+                    alert('حدث خطأ');
+                }
+            });
+    });
+</script>
+{% endblock %}
