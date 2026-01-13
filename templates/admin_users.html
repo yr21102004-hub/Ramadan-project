@@ -126,7 +126,7 @@
                             <td class="small">{{ user.created_at[:10] }}</td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <a href="{{ url_for('user_profile', username=user.username) }}"
+                                    <a href="{{ url_for('user.profile', username=user.username) }}"
                                         class="btn btn-sm btn-outline-info" title="عرض الملف">
                                         <i class="fas fa-eye"></i>
                                     </a>
@@ -135,7 +135,7 @@
                                         data-percentage="{{ user.project_percentage }}" title="تحديث النسبة">
                                         <i class="fas fa-percentage"></i>
                                     </button>
-                                    <form method="POST" action="{{ url_for('delete_user', username=user.username) }}"
+                                    <form method="POST" action="{{ url_for('user.delete', username=user.username) }}"
                                         style="display: inline;"
                                         onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟');">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
@@ -445,7 +445,7 @@
                 <h5 class="modal-title text-gold">تحديث نسبة الإنجاز</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ url_for('update_project_percentage') }}">
+            <form method="POST" action="{{ url_for('user.update_percentage') }}">
                 <div class="modal-body">
                     <input type="hidden" name="username" id="updateUsername">
                     <label class="form-label">نسبة الإنجاز الجديدة</label>
