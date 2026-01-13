@@ -92,7 +92,7 @@ def register():
             'full_name': full_name
         })
         
-        return redirect(url_for('login')) # Login is likely global
+        return redirect(url_for('auth.login'))
         
     return render_template('register.html')
 
@@ -101,7 +101,7 @@ def register():
 def profile(username):
     """Get user profile"""
     if not current_user.is_authenticated:
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
 
     if current_user.role != 'admin' and current_user.username != username:
         return "Access Denied", 403
