@@ -16,6 +16,10 @@ class Database:
             cls._instance.db = TinyDB('database.json')
         return cls._instance
     
+    def table(self, name):
+        """Get a specific table by name"""
+        return self.db.table(name)
+
     @property
     def users(self):
         return self.db.table('users')
