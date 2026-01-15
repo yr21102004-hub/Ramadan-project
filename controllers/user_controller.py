@@ -127,7 +127,10 @@ def profile(username):
         return render_template('worker_dashboard.html', worker=worker_obj)
 
     # Standard User Dashboard logic
+    # Standard User Dashboard logic
     user_obj = {
+        'id': user_data.get('id'),
+        'role': user_data.get('role'),
         'full_name': user_data.get('full_name'),
         'username': user_data.get('username'),
         'email': user_data.get('email', 'لا يوجد'),
