@@ -20,6 +20,21 @@ class AIService:
         self.knowledge_base = [
             {
                 "keywords_ar": [
+                    "السلام", "سلام", "مرحبا", "اهلا", "هاي", "هلو", "صباح", "مساء",
+                    "ازيك", "ازيكم", "عامل ايه", "اخبارك", "كيفك", "كيف حالك",
+                    "تمام", "الحمد لله", "بخير", "كويس", "تشرفنا", "اهلين"
+                ],
+                "keywords_en": [
+                    "hi", "hello", "hey", "hai", "hay", "hii", "helo",
+                    "good morning", "good evening", "good afternoon",
+                    "how are you", "how r u", "how are u", "whats up", "what's up",
+                    "how do you do", "nice to meet", "greetings", "sup"
+                ],
+                "response_ar": "أهلاً وسهلاً! 👋\nأنا المساعد الذكي لـ الحاج رمضان محمد جبر للدهانات والديكورات.\nكيف يمكنني مساعدتك اليوم؟ 😊\n\nيمكنني الإجابة عن:\n• مشاكل الرطوبة والشروخ\n• الأسعار والخدمات\n• المشاريع والأعمال السابقة\n• معلومات التواصل",
+                "response_en": "Hello! 👋\nI'm the Smart Assistant for Haj Ramadan Mohamed Gabr Paints & Decor.\nHow can I help you today? 😊\n\nI can answer about:\n• Humidity and crack problems\n• Prices and services\n• Projects and previous work\n• Contact information"
+            },
+            {
+                "keywords_ar": [
                     "تواصل", "اتواصل", "نتواصل", "التواصل", "اكلم", "أكلم", "كلم", "اكلمكم", "كلمكم", "اكلم حد", 
                     "رقم", "ارقام", "تليفون", "تلفون", "موبايل", "محمول", "هاتف", "جوال",
                     "اتصل", "اتصال", "كلمني", "كلموني", "كلمنا", "اتصلوا", "اتصلو",
@@ -295,21 +310,52 @@ class AIService:
         """Refreshes the internal cache of learned answers."""
         self._learned_cache = self.learned_model.get_all()
 
+    def detect_language(self, text: str) -> str:
+        """Detect if the message is primarily Arabic or English."""
+        # Count Arabic characters vs English characters
+        arabic_chars = len(re.findall(r'[\u0600-\u06FF]', text))
+        english_chars = len(re.findall(r'[a-zA-Z]', text))
+        
+        # If more Arabic characters, it's Arabic
+        if arabic_chars > english_chars:
+            return 'ar'
+        elif english_chars > 0:
+            return 'en'
+        else:
+            # Default to Arabic if no clear indication
+            return 'ar'
+
     def get_response(self, user_id, message, user_name="Guest") -> str:
         """Get the appropriate response for the user message with fuzzy logic."""
         msg_norm = self.normalize_text(message)
         msg_keywords = self.extract_keywords(message)
         
+        # Detect user's language
+        user_language = self.detect_language(message)
+        
         # 1. Check Static Knowledge Base (Keyword-based high priority)
         for entry in self.knowledge_base:
+            matched = False
+            
             # Check Arabic keywords
             for kw in entry['keywords_ar']:
                 kw_norm = self.normalize_text(kw)
                 if kw_norm in msg_norm or (kw_norm in msg_keywords):
+                    matched = True
+                    break
+            
+            # If no Arabic match, check English keywords
+            if not matched:
+                for kw in entry['keywords_en']:
+                    if kw.lower() in message.lower() or (kw.lower() in msg_keywords):
+                        matched = True
+                        break
+            
+            # If matched, return response in user's language
+            if matched:
+                if user_language == 'ar':
                     return entry['response_ar']
-            # Check English keywords
-            for kw in entry['keywords_en']:
-                if kw.lower() in message.lower() or (kw.lower() in msg_keywords):
+                else:
                     return entry['response_en']
         
         # 2. Check Learned Answers table (Cached with Fuzzy Matching)
