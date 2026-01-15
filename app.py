@@ -131,12 +131,10 @@ with app.app_context():
     app.add_url_rule('/admin/toggle_2fa', endpoint='toggle_2fa', view_func=app.view_functions['admin.toggle_2fa'], methods=['POST'])
     app.add_url_rule('/admin/delete_message', endpoint='delete_message', view_func=app.view_functions['admin.delete_message'], methods=['POST'])
     
-    # New Admin Routes for Users and Workers
+
+    # Admin Users
     app.add_url_rule('/admin/users', endpoint='admin_users', view_func=app.view_functions['admin.admin_users'])
-    app.add_url_rule('/admin/workers', endpoint='admin_workers', view_func=app.view_functions['admin.admin_workers'])
-    app.add_url_rule('/admin/add_worker', endpoint='add_worker', view_func=app.view_functions['admin.add_worker'], methods=['POST'])
-    app.add_url_rule('/admin/update_worker', endpoint='update_worker', view_func=app.view_functions['admin.update_worker'], methods=['POST'])
-    
+
     # User Controller Aliases
     app.add_url_rule('/admin/update_project_percentage', endpoint='update_project_percentage', view_func=app.view_functions['user.update_percentage'], methods=['POST'])
     app.add_url_rule('/admin/delete_user/<username>', endpoint='delete_user', view_func=app.view_functions['user.delete'], methods=['POST'])

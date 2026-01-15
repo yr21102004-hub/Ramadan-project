@@ -207,36 +207,18 @@
                         <h6 class="text-white mb-3">اتخاذ القرار</h6>
 
                         <form id="assignForm" method="POST">
-                            <input type="hidden" name="assignment_type" id="assignmentType">
-                            <input type="hidden" name="worker_username" id="selectedWorker">
+                            <input type="hidden" name="assignment_type" value="admin">
 
-                            <div class="d-flex gap-3 mb-4">
-                                <button type="button" class="btn btn-outline-light flex-grow-1 assignment-option active"
-                                    data-type="worker" onclick="setAssignmentType('worker')">
-                                    <i class="fas fa-hard-hat fa-2x mb-2 d-block"></i>
-                                    تعيين صنايعي
-                                </button>
-                                <button type="button" class="btn btn-outline-light flex-grow-1 assignment-option"
-                                    data-type="admin" onclick="setAssignmentType('admin')">
-                                    <i class="fas fa-user-tie fa-2x mb-2 d-block"></i>
-                                    معاينة إدارية
-                                </button>
-                            </div>
-
-                            <!-- Workers List (Hidden for Admin choice) -->
-                            <div id="workersListSection">
-                                <h6 class="text-gold mb-3 small">أقرب صنايعية متاحين (بالمسافة)</h6>
-                                <div class="workers-grid mb-3" id="workersGrid">
-                                    <!-- Populated via JS -->
-                                    <div class="text-center py-3 text-muted">جاري البحث...</div>
-                                </div>
+                            <div class="alert alert-info bg-dark border-0 text-white mb-4">
+                                <i class="fas fa-info-circle text-gold me-2"></i>
+                                سيتم تعيين هذه المعاينة للإدارة.
                             </div>
 
                             <div class="text-end border-top pt-3">
                                 <button type="button" class="btn btn-secondary me-2"
                                     data-bs-dismiss="modal">إلغاء</button>
-                                <button type="submit" class="btn btn-gold px-4" id="confirmBtn" disabled>
-                                    تأكيد القرار
+                                <button type="submit" class="btn btn-gold px-4">
+                                    تأكيد المعاينة الإدارية
                                 </button>
                             </div>
                         </form>
@@ -437,7 +419,7 @@
 
     function openAssignModal(reqId) {
         document.getElementById('assignForm').action = `/admin/inspection/${reqId}/assign`;
-        setAssignmentType('worker'); // Default
+
 
         // Load Details
         fetch(`/admin/inspection/${reqId}/details`)
@@ -474,8 +456,7 @@
                     marker = L.marker(latlng).addTo(map);
                 }
 
-                // Workers
-                renderWorkers(data.nearby_workers);
+
 
                 var modal = new bootstrap.Modal(assignModal);
                 modal.show();
@@ -532,55 +513,6 @@
             });
     }
 
-    function renderWorkers(workers) {
-        const grid = document.getElementById('workersGrid');
-        grid.innerHTML = '';
 
-        if (workers.length === 0) {
-            grid.innerHTML = '<div class="text-center text-muted col-12">لا يوجد صنايعية متاحين في النطاق المحدد</div>';
-            return;
-        }
-
-        workers.forEach(item => {
-            const w = item.worker;
-            const dist = item.distance;
-
-            const div = document.createElement('div');
-            div.className = 'worker-select-card';
-            div.onclick = () => selectWorker(w.username, div);
-            div.innerHTML = `
-                <div class="d-flex justify-content-between">
-                    <div class="fw-bold text-white">${w.full_name}</div>
-                    <div class="text-gold small"><i class="fas fa-star"></i> 4.5</div>
-                </div>
-                <div class="small text-muted mt-1"><i class="fas fa-map-marker-alt"></i> يبعد ${dist} كم</div>
-                <div class="small text-success mt-1"><i class="fas fa-check-circle"></i> متاح</div>
-            `;
-            grid.appendChild(div);
-        });
-    }
-
-    function setAssignmentType(type) {
-        document.getElementById('assignmentType').value = type;
-        document.querySelectorAll('.assignment-option').forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`.assignment-option[data-type="${type}"]`).classList.add('active');
-
-        if (type === 'admin') {
-            document.getElementById('workersListSection').style.display = 'none';
-            document.getElementById('confirmBtn').disabled = false;
-        } else {
-            document.getElementById('workersListSection').style.display = 'block';
-            // Disable until worker selected
-            document.getElementById('confirmBtn').disabled = !document.getElementById('selectedWorker').value;
-        }
-    }
-
-    function selectWorker(username, element) {
-        document.getElementById('selectedWorker').value = username;
-        document.querySelectorAll('.worker-select-card').forEach(el => el.classList.remove('selected'));
-        element.classList.add('selected');
-        document.getElementById('confirmBtn').disabled = false;
-    }
 </script>
-{% endblock %}
 {% endblock %}

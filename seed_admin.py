@@ -1,34 +1,37 @@
-from tinydb import TinyDB, Query
-from werkzeug.security import generate_password_hash
+from models.database import UserModel
+from flask_bcrypt import Bcrypt
 from datetime import datetime
+import os
 
-# Connect to DB
-db = TinyDB('database.json')
-users_table = db.table('users')
+# Initialize
+user_model = UserModel()
+bcrypt = Bcrypt()
 
 # Admin Credentials
-username = "you@#2110$ssef"
-password = "1357911"
+username = os.environ.get('ADMIN_USERNAME', "you@#2110$ssef")
+password = os.environ.get('ADMIN_PASSWORD', "1357911")
 full_name = "System Administrator"
 
 # Check if user exists
-User = Query()
-existing_user = users_table.search(User.username == username)
+existing_user = user_model.get_by_username(username)
+
+# Use bcrypt for consistency with the app
+hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
 
 if existing_user:
     # Update existing user to be admin with correct password
     print(f"Updating existing user '{username}' to Admin role...")
-    users_table.update({
+    user_model.update(username, {
         'role': 'admin',
-        'password': generate_password_hash(password),
+        'password': hashed_password,
         'full_name': full_name
-    }, User.username == username)
+    })
 else:
     # Create new admin user
     print(f"Creating new Admin user '{username}'...")
-    users_table.insert({
+    user_model.create({
         'username': username,
-        'password': generate_password_hash(password),
+        'password': hashed_password,
         'full_name': full_name,
         'phone': '00000000000',
         'role': 'admin',

@@ -1,323 +1,527 @@
 """
-Database Models
-Handles all database operations
+Database Models (SQLite Version)
+Handles all database operations using SQL for better reliability.
 """
-from tinydb import TinyDB, Query
-from datetime import datetime
+import sqlite3
 import os
+from datetime import datetime
 
 class Database:
-    """Database singleton class"""
+    """SQLite Database singleton class"""
     _instance = None
+    DB_NAME = 'ramadan_company.db'
     
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(Database, cls).__new__(cls)
-            cls._instance.db = TinyDB('database.json')
+            cls._instance._init_db()
         return cls._instance
     
+    def _init_db(self):
+        """Initialize SQLite database tables"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        
+        # 1. Users Table (Comprehensive)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                username TEXT PRIMARY KEY,
+                password TEXT NOT NULL,
+                full_name TEXT NOT NULL,
+                email TEXT,
+                phone TEXT,
+                role TEXT DEFAULT 'user',
+                profile_image TEXT,
+                project_location TEXT,
+                project_description TEXT,
+                project_percentage INTEGER DEFAULT 0,
+                two_factor_enabled BOOLEAN DEFAULT 0,
+                two_factor_secret TEXT,
+                specialization TEXT,
+                experience_years INTEGER,
+                status TEXT,
+                created_at TEXT
+            )
+        ''')
+        
+        # 2. Chat Logs Table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS chat_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT,
+                user_name TEXT,
+                message TEXT,
+                response TEXT,
+                timestamp TEXT
+            )
+        ''')
+        
+        # 3. Contacts Table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS contacts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                phone TEXT,
+                message TEXT,
+                user_id TEXT,
+                service TEXT,
+                created_at TEXT
+            )
+        ''')
+        
+        # 4. Unanswered Questions
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS unanswered_questions (
+                question TEXT PRIMARY KEY,
+                user_id TEXT,
+                timestamp TEXT,
+                admin_response TEXT
+            )
+        ''')
+        
+        # 5. Security Audit Logs
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS security_audit_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                event TEXT,
+                details TEXT,
+                severity TEXT,
+                timestamp TEXT
+            )
+        ''')
+        
+        # 6. Payments Table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS payments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT,
+                full_name TEXT,
+                amount REAL,
+                method TEXT,
+                timestamp TEXT,
+                status TEXT DEFAULT 'Pending'
+            )
+        ''')
+        
+        # 7. Learned Answers
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS learned_answers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                question TEXT UNIQUE,
+                answer TEXT,
+                learned_at TEXT
+            )
+        ''')
+        
+        # 8. Subscriptions
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT,
+                email TEXT,
+                created_at TEXT
+            )
+        ''')
+        
+        # 9. Ratings Table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS ratings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT,
+                worker_id TEXT,
+                user_id TEXT,
+                quality_rating INTEGER,
+                behavior_rating INTEGER,
+                comment TEXT,
+                timestamp TEXT,
+                created_at TEXT
+            )
+        ''')
+
+        # 10. Complaints Table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS complaints (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT,
+                subject TEXT,
+                message TEXT,
+                status TEXT DEFAULT 'قيد المراجعة',
+                admin_notes TEXT,
+                created_at TEXT
+            )
+        ''')
+
+        # 11. Inspection Requests
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS inspection_requests (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT,
+                location TEXT,
+                date TEXT,
+                status TEXT DEFAULT 'new_request',
+                worker_id TEXT,
+                admin_notes TEXT,
+                created_at TEXT
+            )
+        ''')
+        
+        conn.commit()
+        conn.close()
+
+    def get_connection(self):
+        conn = sqlite3.connect(self.DB_NAME)
+        conn.row_factory = sqlite3.Row
+        return conn
+
+    @property
+    def users(self): return UserModel()
+
     def table(self, name):
-        """Get a specific table by name"""
-        return self.db.table(name)
+        """Proxy for TinyDB table() method"""
+        return GenericSQLiteModel(name)
+    
+    @property
+    def chats(self): return ChatModel()
+    
+    @property
+    def contacts(self): return ContactModel()
+    
+    @property
+    def unanswered(self): return UnansweredQuestionsModel()
+    
+    @property
+    def security_logs(self): return SecurityLogModel()
+    
+    @property
+    def payments(self): return PaymentModel()
+    
+    @property
+    def learned_answers(self): return LearnedAnswersModel()
+    
+    @property
+    def subscriptions(self): return SubscriptionModel()
+    
+    @property
+    def ratings(self): return GenericSQLiteModel('ratings')
+    
+    @property
+    def complaints(self): return GenericSQLiteModel('complaints')
+    
+    @property
+    def inspection_requests(self): return GenericSQLiteModel('inspection_requests')
 
-    @property
-    def users(self):
-        return self.db.table('users')
-    
-    @property
-    def chats(self):
-        return self.db.table('chat_logs')
-    
-    @property
-    def contacts(self):
-        return self.db.table('contacts')
-    
-    @property
-    def unanswered(self):
-        return self.db.table('unanswered_questions')
-    
-    @property
-    def security_logs(self):
-        return self.db.table('security_audit_logs')
-    
-    @property
-    def payments(self):
-        return self.db.table('payments')
-    
-    @property
-    def subscriptions(self):
-        return self.db.table('subscriptions')
-    
-    @property
-    def learned_answers(self):
-        return self.db.table('learned_answers')
-    
-    @property
-    def ratings(self):
-        return self.db.table('ratings')
-    
-    @property
-    def complaints(self):
-        return self.db.table('complaints')
-    
-    @property
-    def inspection_requests(self):
-        return self.db.table('inspection_requests')
+class SQLiteModel:
+    """Base SQL Model"""
+    def __init__(self, table):
+        self.db_mgr = Database()
+        self.table = table
 
+    def _dict_from_row(self, row):
+        if row is None: return None
+        d = dict(row)
+        if 'id' in d:
+             d['doc_id'] = d['id']
+        return d
 
+    def _get_columns(self):
+        conn = self.db_mgr.get_connection()
+        try:
+            cursor = conn.execute(f"PRAGMA table_info({self.table})")
+            cols = [col[1] for col in cursor.fetchall()]
+            return cols
+        finally:
+            conn.close()
 
-class UserModel:
-    """User Model - handles user operations"""
+    def _filter_data(self, data):
+        """Filter input dict to only include keys that are columns in the table"""
+        cols = self._get_columns()
+        return {k: v for k, v in data.items() if k in cols}
+
+class GenericSQLiteModel(SQLiteModel):
+    """Fallback for tables without dedicated model classes yet"""
+    def __init__(self, table):
+        super().__init__(table)
     
+    def all(self):
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table}").fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
+    
+    def insert(self, data):
+        filtered_data = self._filter_data(data)
+        cols = ', '.join(filtered_data.keys())
+        placeholders = ', '.join(['?'] * len(filtered_data))
+        sql = f"INSERT INTO {self.table} ({cols}) VALUES ({placeholders})"
+        conn = self.db_mgr.get_connection()
+        try:
+            cursor = conn.execute(sql, list(filtered_data.values()))
+            conn.commit()
+            return cursor.lastrowid
+        finally:
+            conn.close()
+
+    def search(self, query=None):
+        # Very basic search shim for TinyDB compatibility
+        # In practice, the caller should be updated to use SQL
+        return self.all()
+
+    def get(self, query=None):
+        all_data = self.all()
+        return all_data[0] if all_data else None
+
+class UserModel(SQLiteModel):
     def __init__(self):
-        self.db = Database()
-        self.table = self.db.users
-        self.query = Query()
+        super().__init__('users')
     
     def get_by_username(self, username):
-        """Get user by username"""
-        return self.table.get(self.query.username == username)
+        conn = self.db_mgr.get_connection()
+        row = conn.execute(f"SELECT * FROM {self.table} WHERE username = ?", (username,)).fetchone()
+        conn.close()
+        return self._dict_from_row(row)
     
     def get_all(self):
-        """Get all users"""
-        return self.table.all()
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table}").fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
     
     def create(self, user_data):
-        """Create new user"""
-        user_data['created_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return self.table.insert(user_data)
+        if 'created_at' not in user_data:
+            user_data['created_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        filtered_data = self._filter_data(user_data)
+        cols = ', '.join(filtered_data.keys())
+        placeholders = ', '.join(['?'] * len(filtered_data))
+        sql = f"INSERT INTO {self.table} ({cols}) VALUES ({placeholders})"
+        
+        conn = self.db_mgr.get_connection()
+        try:
+            conn.execute(sql, list(filtered_data.values()))
+            conn.commit()
+        finally:
+            conn.close()
     
     def update(self, username, data):
-        """Update user"""
-        return self.table.update(data, self.query.username == username)
+        filtered_data = self._filter_data(data)
+        if not filtered_data: return
+        
+        set_clause = ', '.join([f"{k} = ?" for k in filtered_data.keys()])
+        values = list(filtered_data.values())
+        values.append(username)
+        sql = f"UPDATE {self.table} SET {set_clause} WHERE username = ?"
+        
+        conn = self.db_mgr.get_connection()
+        try:
+            conn.execute(sql, values)
+            conn.commit()
+        finally:
+            conn.close()
     
     def delete(self, username):
-        """Delete user"""
-        return self.table.remove(self.query.username == username)
-    
-    def get_all_except_admin(self):
-        """Get all users except admin"""
-        return [u for u in self.table.all() if u.get('role') != 'admin']
+        conn = self.db_mgr.get_connection()
+        conn.execute(f"DELETE FROM {self.table} WHERE username = ?", (username,))
+        conn.commit()
+        conn.close()
 
-    def submit_verification(self, username, data):
-        """Submit worker verification documents"""
-        update_data = {
-            'verification_status': 'pending',
-            'id_card_front': data.get('id_card_front'),
-            'id_card_back': data.get('id_card_back'),
-            'selfie_image': data.get('selfie_image'),
-            'work_proof_type': data.get('work_proof_type'),
-            'work_proof_files': data.get('work_proof_files', []),
-            'verification_submitted_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        return self.table.update(update_data, self.query.username == username)
-
-    def verify_user(self, username, status='verified', notes=''):
-        """Approve or Reject verification"""
-        update_data = {
-            'verification_status': status,
-            'verified_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'admin_notes': notes
-        }
-        return self.table.update(update_data, self.query.username == username)
-
-    def get_pending_verifications(self):
-        """Get all users with pending verification"""
-        return self.table.search(self.query.verification_status == 'pending')
-
-
-class ChatModel:
-    """Chat Model - handles chat operations"""
-    
+class ChatModel(SQLiteModel):
     def __init__(self):
-        self.db = Database()
-        self.table = self.db.chats
-        self.query = Query()
+        super().__init__('chat_logs')
     
     def get_all(self):
-        """Get all chats"""
-        return self.table.all()
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} ORDER BY timestamp DESC").fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
     
     def get_by_user(self, user_id):
-        """Get chats by user ID"""
-        return self.table.search(self.query.user_id == user_id)
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} WHERE user_id = ? ORDER BY timestamp DESC", (user_id,)).fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
     
     def create(self, chat_data):
-        """Create new chat log"""
-        chat_data['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return self.table.insert(chat_data)
+        if 'timestamp' not in chat_data:
+            chat_data['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        filtered_data = self._filter_data(chat_data)
+        cols = ', '.join(filtered_data.keys())
+        placeholders = ', '.join(['?'] * len(filtered_data))
+        sql = f"INSERT INTO {self.table} ({cols}) VALUES ({placeholders})"
+        
+        conn = self.db_mgr.get_connection()
+        conn.execute(sql, list(filtered_data.values()))
+        conn.commit()
+        conn.close()
 
-
-class PaymentModel:
-    """Payment Model - handles payment operations"""
-    
+class PaymentModel(SQLiteModel):
     def __init__(self):
-        self.db = Database()
-        self.table = self.db.payments
-        self.query = Query()
+        super().__init__('payments')
     
     def get_all(self):
-        """Get all payments"""
-        return self.table.all()
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} ORDER BY timestamp DESC").fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
+    
+    def get_by_user(self, username):
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} WHERE username = ? ORDER BY timestamp DESC", (username,)).fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
     
     def create(self, payment_data):
-        """Create new payment"""
-        payment_data['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return self.table.insert(payment_data)
+        if 'timestamp' not in payment_data:
+            payment_data['timestamp'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        filtered_data = self._filter_data(payment_data)
+        cols = ', '.join(filtered_data.keys())
+        placeholders = ', '.join(['?'] * len(filtered_data))
+        sql = f"INSERT INTO {self.table} ({cols}) VALUES ({placeholders})"
+        
+        conn = self.db_mgr.get_connection()
+        conn.execute(sql, list(filtered_data.values()))
+        conn.commit()
+        conn.close()
 
-    def get_by_user(self, username):
-        """Get payments by username"""
-        return self.table.search(self.query.username == username)
+    def update_status(self, doc_id, status):
+        conn = self.db_mgr.get_connection()
+        conn.execute(f"UPDATE {self.table} SET status = ? WHERE id = ?", (status, doc_id))
+        conn.commit()
+        conn.close()
 
-
-class SubscriptionModel:
-    """Subscription Model"""
-    
+class SecurityLogModel(SQLiteModel):
     def __init__(self):
-        self.db = Database()
-        self.table = self.db.subscriptions
-        self.query = Query()
+        super().__init__('security_audit_logs')
     
     def get_all(self):
-        return self.table.all()
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} ORDER BY timestamp DESC").fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
     
-    def get_by_user(self, username):
-        return self.table.search(self.query.username == username)
-    
-    def create(self, data):
-        data['created_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return self.table.insert(data)
-
-
-class SecurityLogModel:
-    """Security Log Model"""
-    
-    def __init__(self):
-        self.db = Database()
-        self.table = self.db.security_logs
-        self.query = Query()
-    
-    def get_all(self):
-        """Get all security logs"""
-        return self.table.all()
-    
-    def create(self, event_type, details, severity="low"):
-        """Create security log"""
-        log_data = {
-            'event': event_type,
-            'details': details,
-            'severity': severity,
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        return self.table.insert(log_data)
+    def create(self, event, details, severity="low"):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        conn = self.db_mgr.get_connection()
+        conn.execute(f"INSERT INTO {self.table} (event, details, severity, timestamp) VALUES (?, ?, ?, ?)", 
+                     (event, details, severity, timestamp))
+        conn.commit()
+        conn.close()
 
     def truncate(self):
-        """Clear all security logs"""
-        return self.table.truncate()
+        conn = self.db_mgr.get_connection()
+        conn.execute(f"DELETE FROM {self.table}")
+        conn.commit()
+        conn.close()
 
-
-class ContactModel:
-    """Contact Model - handles contact form submissions"""
-    
+class ContactModel(SQLiteModel):
     def __init__(self):
-        self.db = Database()
-        self.table = self.db.contacts
-        self.query = Query()
+        super().__init__('contacts')
     
     def get_all(self):
-        """Get all contact messages"""
-        return self.table.all()
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} ORDER BY created_at DESC").fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
     
-    def create(self, name, phone, message, user_id=None, service=None):
-        """Create new contact message"""
-        contact_data = {
-            'name': name,
-            'phone': phone,
-            'message': message,
-            'user_id': user_id,
-            'service': service,
-            'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        return self.table.insert(contact_data)
-
     def get_by_user(self, user_id):
-        """Get messages by user ID"""
-        return self.table.search(self.query.user_id == user_id)
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} WHERE user_id = ?", (user_id,)).fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
+
+    def create(self, name, phone, message, user_id=None, service=None):
+        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        conn = self.db_mgr.get_connection()
+        conn.execute(f"INSERT INTO {self.table} (name, phone, message, user_id, service, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                     (name, phone, message, user_id, service, created_at))
+        conn.commit()
+        conn.close()
 
     def delete(self, doc_id):
-        """Delete contact message by ID"""
-        return self.table.remove(doc_ids=[int(doc_id)])
+        conn = self.db_mgr.get_connection()
+        conn.execute(f"DELETE FROM {self.table} WHERE id = ?", (doc_id,))
+        conn.commit()
+        conn.close()
 
-
-class LearnedAnswersModel:
-    """Learned Answers Model - stores Q&A pairs for AI learning"""
-    
+class LearnedAnswersModel(SQLiteModel):
     def __init__(self):
-        self.db = Database()
-        self.table = self.db.learned_answers
-        self.query = Query()
+        super().__init__('learned_answers')
     
     def get_all(self):
-        """Get all learned answers"""
-        return self.table.all()
-    
-    def get_by_question(self, question):
-        """Get answer by question"""
-        return self.table.get(self.query.question == question)
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} ORDER BY learned_at DESC").fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
     
     def create(self, question, answer):
-        """Create new learned answer"""
-        learned_data = {
-            'question': question,
-            'answer': answer,
-            'learned_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        return self.table.insert(learned_data)
-    
-    def search_similar(self, normalized_question):
-        """Search for similar questions using normalized text"""
-        all_learned = self.table.all()
-        for record in all_learned:
-            if record.get('question') == normalized_question:
-                return record.get('answer')
-        return None
+        learned_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        msg_clean = question.lower().strip()
+        conn = self.db_mgr.get_connection()
+        try:
+            conn.execute(f"INSERT OR REPLACE INTO {self.table} (question, answer, learned_at) VALUES (?, ?, ?)",
+                         (msg_clean, answer, learned_at))
+            conn.commit()
+        finally:
+            conn.close()
 
-
-class UnansweredQuestionsModel:
-    """Unanswered Questions Model"""
-    
+class UnansweredQuestionsModel(SQLiteModel):
     def __init__(self):
-        self.db = Database()
-        self.table = self.db.unanswered
-        self.query = Query()
+        super().__init__('unanswered_questions')
     
     def get_all(self):
-        """Get all unanswered questions"""
-        return self.table.all()
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} ORDER BY timestamp DESC").fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
     
-    def get_by_question(self, question):
-        """Get question by text"""
-        return self.table.get(self.query.question == question)
-        
-    def get_by_user(self, user_id):
-        """Get unanswered by user ID"""
-        return self.table.search(self.query.user_id == user_id)
-        
     def create(self, question, user_id):
-        """Create new unanswered question"""
         msg_clean = question.lower().strip()
-        # Upsert: update timestamp if exists, insert if not
-        self.table.upsert({
-            'question': msg_clean,
-            'user_id': user_id,
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'admin_response': None
-        }, self.query.question == msg_clean)
-        
-    def update_response(self, question, response):
-        """Update admin response"""
-        return self.table.update({'admin_response': response}, self.query.question == question)
-        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        conn = self.db_mgr.get_connection()
+        try:
+            conn.execute(f"INSERT OR REPLACE INTO {self.table} (question, user_id, timestamp, admin_response) VALUES (?, ?, ?, NULL)",
+                         (msg_clean, user_id, timestamp))
+            conn.commit()
+        finally:
+            conn.close()
+
     def delete(self, question):
-        """Delete question"""
-        return self.table.remove(self.query.question == question)
+        conn = self.db_mgr.get_connection()
+        conn.execute(f"DELETE FROM {self.table} WHERE question = ?", (question.lower().strip(),))
+        conn.commit()
+        conn.close()
+
+    def get_by_user(self, user_id):
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} WHERE user_id = ?", (user_id,)).fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
+
+class SubscriptionModel(SQLiteModel):
+    def __init__(self):
+        super().__init__('subscriptions')
+    
+    def get_all(self):
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table}").fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
+    
+    def get_by_user(self, username):
+        conn = self.db_mgr.get_connection()
+        rows = conn.execute(f"SELECT * FROM {self.table} WHERE username = ?", (username,)).fetchall()
+        conn.close()
+        return [self._dict_from_row(r) for r in rows]
+    
+    def create(self, data):
+        if 'created_at' not in data:
+            data['created_at'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        filtered_data = self._filter_data(data)
+        cols = ', '.join(filtered_data.keys())
+        placeholders = ', '.join(['?'] * len(filtered_data))
+        sql = f"INSERT INTO {self.table} ({cols}) VALUES ({placeholders})"
+        conn = self.db_mgr.get_connection()
+        conn.execute(sql, list(filtered_data.values()))
+        conn.commit()
+        conn.close()

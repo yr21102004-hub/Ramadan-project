@@ -10,7 +10,10 @@
                 <p class="text-muted mt-2">مرحباً بك، {{ current_user.full_name }}</p>
             </div>
             <div>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger">
+                <button class="btn btn-gold btn-sm me-2" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="fas fa-plus me-2"></i> إضافة عميل جديد
+                </button>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">
                     <i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج
                 </a>
             </div>
@@ -41,15 +44,15 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="stat-card glass h-100">
+                <a href="{{ url_for('admin.admin_transfers') }}" class="stat-card glass h-100 text-decoration-none">
                     <div class="stat-icon bg-success-gradient">
-                        <i class="fas fa-percentage"></i>
+                        <i class="fas fa-money-bill-wave"></i>
                     </div>
                     <div class="stat-info">
-                        <h3>{{ analytics.conversion_rate }}%</h3>
-                        <p>نسبة التحويل</p>
+                        <h3>{{ analytics.total_revenue }} ج.م</h3>
+                        <p>قائمة التحويلات</p>
                     </div>
-                </div>
+                </a>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="stat-card glass h-100">
@@ -77,20 +80,6 @@
                     <div class="nav-card-badge">{{ users|selectattr('role', 'equalto', 'user')|list|length }} عميل</div>
                 </a>
             </div>
-
-            <!-- Workers Card -->
-            <div class="col-lg-4 col-md-6">
-                <a href="{{ url_for('admin.admin_workers') }}" class="nav-card glass">
-                    <div class="nav-card-icon bg-orange-gradient">
-                        <i class="fas fa-hard-hat"></i>
-                    </div>
-                    <h4>إدارة الصنايعية</h4>
-                    <p>عرض وإدارة حسابات العمال</p>
-                    <div class="nav-card-badge">{{ users|selectattr('role', 'equalto', 'worker')|list|length }} عامل
-                    </div>
-                </a>
-            </div>
-
             <!-- Analytics Card -->
             <div class="col-lg-4 col-md-6">
                 <a href="{{ url_for('admin.analytics_dashboard') }}" class="nav-card glass">
@@ -139,188 +128,162 @@
                 </a>
             </div>
 
-            <!-- Inspections Card -->
+
+
+
+
+            <!-- Complaints Card -->
             <div class="col-lg-4 col-md-6">
-                <a href="{{ url_for('admin.admin_inspections') }}" class="nav-card glass">
-                    <div class="nav-card-icon bg-purple-gradient">
-                        <i class="fas fa-search-location"></i>
+                <a href="{{ url_for('admin.admin_complaints') }}" class="nav-card glass">
+                    <div class="nav-card-icon bg-warning-gradient">
+                        <i class="fas fa-flag"></i>
                     </div>
-                    <h4>إدارة المعاينات</h4>
-                    <p>توزيع ومتابعة الطلبات</p>
-                    <div class="nav-card-badge">جديد</div>
+                    <h4>إدارة الشكاوى</h4>
+                    <p>مراجعة شكاوى المستخدمين</p>
+                    <div class="nav-card-badge"><i class="fas fa-exclamation-triangle"></i></div>
                 </a>
             </div>
+        </div>
 
-            <!-- Verification Card -->
-            <div class="col-lg-4 col-md-6">
-                <a href="{{ url_for('admin.admin_verifications') }}" class="nav-card glass">
-                    <div class="nav-card-icon bg-success-gradient">
-                        <i class="fas fa-id-card-alt"></i>
-                    </div>
-                    <h4>طلبات التوثيق</h4>
-                    <p>مراجعة هويات الصنايعية</p>
-                    <div class="nav-card-badge text-gold"><i class="fas fa-check-circle"></i></div>
-                </a>
+        <div class="divider my-5"></div>
+
+        <!-- Messages Section -->
+        <div id="messagesSection" class="mb-5" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-gold"><i class="fas fa-envelope me-2"></i> رسائل التواصل</h3>
             </div>
-            <i class="fas fa-search-location"></i>
-        </div>
-        <h4>إدارة المعاينات</h4>
-        <p>توزيع ومتابعة الطلبات</p>
-        <div class="nav-card-badge">جديد</div>
-        </a>
-    </div>
 
-    <!-- Complaints Card -->
-    <div class="col-lg-4 col-md-6">
-        <a href="{{ url_for('admin.admin_complaints') }}" class="nav-card glass">
-            <div class="nav-card-icon bg-warning-gradient">
-                <i class="fas fa-flag"></i>
-            </div>
-            <h4>إدارة الشكاوى</h4>
-            <p>مراجعة شكاوى المستخدمين</p>
-            <div class="nav-card-badge"><i class="fas fa-exclamation-triangle"></i></div>
-        </a>
-    </div>
-    </div>
-
-    <div class="divider my-5"></div>
-
-    <!-- Messages Section -->
-    <div id="messagesSection" class="mb-5" data-aos="fade-up">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="text-gold"><i class="fas fa-envelope me-2"></i> رسائل التواصل</h3>
-        </div>
-
-        {% if messages %}
-        <div class="table-responsive">
-            <table class="table modern-table">
-                <thead>
-                    <tr>
-                        <th>الاسم</th>
-                        <th>الهاتف</th>
-                        <th>الخدمة</th>
-                        <th>الرسالة</th>
-                        <th>التاريخ</th>
-                        <th>إجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for msg in messages[:10] %}
-                    <tr>
-                        <td>{{ msg.name }}</td>
-                        <td dir="ltr">{{ msg.phone }}</td>
-                        <td>{{ msg.service or 'عام' }}</td>
-                        <td class="text-truncate" style="max-width: 200px;">{{ msg.message }}</td>
-                        <td class="small">{{ msg.created_at[:10] }}</td>
-                        <td>
-                            <form method="POST" action="{{ url_for('admin.delete_message') }}" style="display: inline;">
-                                <input type="hidden" name="doc_id" value="{{ msg.doc_id }}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
-            <p>لا توجد رسائل</p>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- Unanswered Questions Section -->
-    {% if unanswered %}
-    <div class="mb-5" data-aos="fade-up">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="text-gold"><i class="fas fa-question-circle me-2"></i> أسئلة بانتظار الرد</h3>
-            <span class="badge bg-danger">{{ unanswered|length }}</span>
-        </div>
-
-        {% for q in unanswered[:5] %}
-        <div class="question-card glass mb-3">
-            <div class="question-header">
-                <strong>{{ q.user_id }}</strong>
-                <span class="small text-muted">{{ q.timestamp }}</span>
-            </div>
-            <div class="question-body">
-                <p class="mb-2"><strong>السؤال:</strong> {{ q.question }}</p>
-
-                <!-- Show context -->
-                {% set context = get_context(q.user_id, q.timestamp) %}
-                {% if context %}
-                <details class="mb-3">
-                    <summary class="text-info small" style="cursor: pointer;">
-                        <i class="fas fa-history me-1"></i> عرض السياق ({{ context|length }} رسالة)
-                    </summary>
-                    <div class="context-box mt-2">
-                        {% for c in context %}
-                        <div class="context-item">
-                            <small class="text-muted">{{ c.timestamp }}</small>
-                            <div class="user-msg">{{ c.message }}</div>
-                            <div class="bot-msg">{{ c.response }}</div>
-                        </div>
+            {% if messages %}
+            <div class="table-responsive">
+                <table class="table modern-table">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>الهاتف</th>
+                            <th>الخدمة</th>
+                            <th>الرسالة</th>
+                            <th>التاريخ</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for msg in messages[:10] %}
+                        <tr>
+                            <td>{{ msg.name }}</td>
+                            <td dir="ltr">{{ msg.phone }}</td>
+                            <td>{{ msg.service or 'عام' }}</td>
+                            <td class="text-truncate" style="max-width: 200px;">{{ msg.message }}</td>
+                            <td class="small">{{ msg.created_at[:10] }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin.delete_message') }}"
+                                    style="display: inline;">
+                                    <input type="hidden" name="doc_id" value="{{ msg.doc_id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
                         {% endfor %}
-                    </div>
-                </details>
-                {% endif %}
-
-                <form method="POST" action="{{ url_for('admin.answer_question') }}">
-                    <input type="hidden" name="question" value="{{ q.question }}">
-                    <div class="mb-2">
-                        <textarea name="answer" class="form-control" rows="2" placeholder="اكتب الإجابة هنا..."
-                            required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-sm btn-gold">
-                        <i class="fas fa-check me-1"></i> حفظ الإجابة
-                    </button>
-                </form>
+                    </tbody>
+                </table>
             </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                <p>لا توجد رسائل</p>
+            </div>
+            {% endif %}
         </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
-    <!-- Payments Section -->
-    <div class="mb-5" data-aos="fade-up">
-        <h3 class="text-gold mb-4"><i class="fas fa-money-bill-wave me-2"></i> عمليات الدفع الأخيرة</h3>
+        <!-- Unanswered Questions Section -->
+        {% if unanswered %}
+        <div class="mb-5" data-aos="fade-up">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-gold"><i class="fas fa-question-circle me-2"></i> أسئلة بانتظار الرد</h3>
+                <span class="badge bg-danger">{{ unanswered|length }}</span>
+            </div>
 
-        {% if payments %}
-        <div class="table-responsive">
-            <table class="table modern-table">
-                <thead>
-                    <tr>
-                        <th>المستخدم</th>
-                        <th>المبلغ</th>
-                        <th>الوسيلة</th>
-                        <th>التاريخ</th>
-                        <th>الحالة</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for p in payments[:10] %}
-                    <tr>
-                        <td>{{ p.username }}</td>
-                        <td class="text-gold fw-bold">{{ p.amount }} ج.م</td>
-                        <td>{{ p.method }}</td>
-                        <td class="small">{{ p.timestamp[:10] }}</td>
-                        <td><span class="badge bg-success">{{ p.status or 'قيد المراجعة' }}</span></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-wallet fa-3x mb-3 opacity-25"></i>
-            <p>لا توجد عمليات دفع</p>
+            {% for q in unanswered[:5] %}
+            <div class="question-card glass mb-3">
+                <div class="question-header">
+                    <strong>{{ q.user_id }}</strong>
+                    <span class="small text-muted">{{ q.timestamp }}</span>
+                </div>
+                <div class="question-body">
+                    <p class="mb-2"><strong>السؤال:</strong> {{ q.question }}</p>
+
+                    <!-- Show context -->
+                    {% set context = get_context(q.user_id, q.timestamp) %}
+                    {% if context %}
+                    <details class="mb-3">
+                        <summary class="text-info small" style="cursor: pointer;">
+                            <i class="fas fa-history me-1"></i> عرض السياق ({{ context|length }} رسالة)
+                        </summary>
+                        <div class="context-box mt-2">
+                            {% for c in context %}
+                            <div class="context-item">
+                                <small class="text-muted">{{ c.timestamp }}</small>
+                                <div class="user-msg">{{ c.message }}</div>
+                                <div class="bot-msg">{{ c.response }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </details>
+                    {% endif %}
+
+                    <form method="POST" action="{{ url_for('admin.answer_question') }}">
+                        <input type="hidden" name="question" value="{{ q.question }}">
+                        <div class="mb-2">
+                            <textarea name="answer" class="form-control" rows="2" placeholder="اكتب الإجابة هنا..."
+                                required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-gold">
+                            <i class="fas fa-check me-1"></i> حفظ الإجابة
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
         </div>
         {% endif %}
-    </div>
+
+        <!-- Payments Section -->
+        <div class="mb-5" data-aos="fade-up">
+            <h3 class="text-gold mb-4"><i class="fas fa-money-bill-wave me-2"></i> عمليات الدفع الأخيرة</h3>
+
+            {% if payments %}
+            <div class="table-responsive">
+                <table class="table modern-table">
+                    <thead>
+                        <tr>
+                            <th>المستخدم</th>
+                            <th>المبلغ</th>
+                            <th>الوسيلة</th>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payments[:10] %}
+                        <tr>
+                            <td>{{ p.username }}</td>
+                            <td class="text-gold fw-bold">{{ p.amount }} ج.م</td>
+                            <td>{{ p.method }}</td>
+                            <td class="small">{{ p.timestamp[:10] }}</td>
+                            <td><span class="badge bg-success">{{ p.status or 'قيد المراجعة' }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-wallet fa-3x mb-3 opacity-25"></i>
+                <p>لا توجد عمليات دفع</p>
+            </div>
+            {% endif %}
+        </div>
 
     </div>
 </section>
@@ -584,5 +547,93 @@
         height: 1px;
         background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
     }
+
+    /* Modal Styles */
+    .glass-modal {
+        background: rgba(20, 20, 20, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .glass-modal .modal-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-modal .modal-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-modal .form-control,
+    .glass-modal .form-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
+
+    .glass-modal .form-control:focus,
+    .glass-modal .form-select:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--gold);
+        color: #fff;
+        box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+    }
+
+    .glass-modal .form-label {
+        color: #ddd;
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
 </style>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <h5 class="modal-title text-gold">إضافة عميل جديد</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.add_user') }}" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">اسم المستخدم</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">الاسم الكامل</label>
+                            <input type="text" name="full_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الهاتف</label>
+                            <input type="tel" name="phone" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">موقع المشروع</label>
+                            <input type="text" name="project_location" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">وصف المشروع</label>
+                            <textarea name="project_description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">صورة الملف الشخصي (اختياري)</label>
+                            <input type="file" name="profile_image" class="form-control" accept="image/*">
+                        </div>
+                        <input type="hidden" name="role" value="user">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-gold">إضافة العميل</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

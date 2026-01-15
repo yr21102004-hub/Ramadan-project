@@ -84,10 +84,28 @@ def admin_dashboard():
     total_requests_count = len(messages)
     conversion_rate = round((total_requests_count / total_users_count * 100), 1) if total_users_count > 0 else 0
     
+    # Calculate analytics
+    total_users_count = len(users)
+    total_requests_count = len(messages)
+    
+    # Payment Analytics
+    payments_list = payment_model.get_all()
+    confirmed_payments = [p for p in payments_list if p.get('status') == 'Confirmed']
+    total_revenue = sum(float(p.get('amount', 0)) for p in confirmed_payments)
+    
+    conversion_rate = round((total_requests_count / total_users_count * 100), 1) if total_users_count > 0 else 0
+    
+    payments_list = payment_model.get_all()
+    # Assume 'Confirmed' is the status for verified payments
+    # Filter case-insensitive just in case
+    confirmed_payments = [p for p in payments_list if str(p.get('status', '')).lower() == 'confirmed']
+    total_revenue = sum(float(p.get('amount', 0)) for p in confirmed_payments)
+    
     analytics_summary = {
         'total_users': total_users_count,
         'total_requests': total_requests_count,
-        'conversion_rate': conversion_rate
+        'conversion_rate': conversion_rate,
+        'total_revenue': total_revenue
     }
 
     return render_template('admin.html', users=users, messages=messages, 
@@ -171,89 +189,7 @@ def admin_users():
                          payments=user_payments[:10],  # Latest 10 payments
                          analytics=analytics)
 
-@admin_bp.route('/admin/workers')
-@login_required
-def admin_workers():
-    if current_user.role != 'admin':
-        return "Access Denied", 403
-    
-    # Get only users with role='worker'
-    all_users = user_model.get_all()
-    workers = [u for u in all_users if u.get('role') == 'worker']
-    
-    return render_template('admin_workers.html', workers=workers)
 
-@admin_bp.route('/admin/add_worker', methods=['POST'])
-@login_required
-def add_worker():
-    if current_user.role != 'admin':
-        return "Access Denied", 403
-        
-    username = request.form.get('username')
-    full_name = request.form.get('full_name')
-    phone = request.form.get('phone')
-    email = request.form.get('email', '')
-    specialization = request.form.get('specialization')
-    experience_years = request.form.get('experience_years', 0)
-    status = request.form.get('status', 'active')
-    
-    profile_image_path = None
-    if 'profile_image' in request.files:
-        file = request.files['profile_image']
-        if file and file.filename != '':
-            filename = secure_filename(file.filename)
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            file_extension = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'jpg'
-            unique_filename = f"{username}_{timestamp}.{file_extension}"
-            
-            upload_folder = os.path.join('static', 'user_images')
-            if not os.path.exists(upload_folder):
-                os.makedirs(upload_folder)
-            file_path = os.path.join(upload_folder, unique_filename)
-            file.save(file_path)
-            profile_image_path = f"user_images/{unique_filename}"
-    
-    password = bcrypt.generate_password_hash(username).decode('utf-8') 
-
-    if user_model.get_by_username(username):
-        flash('اسم المستخدم موجود بالفعل', 'error')
-        return redirect(url_for('admin.admin_workers'))
-
-    user_model.create({
-        'username': username,
-        'password': password,
-        'full_name': full_name,
-        'email': email,
-        'phone': phone,
-        'profile_image': profile_image_path,
-        'specialization': specialization,
-        'experience_years': int(experience_years),
-        'status': status,
-        'role': 'worker'
-    })
-    
-    flash(f"تم إضافة العامل {full_name} بنجاح.", 'success')
-    return redirect(url_for('admin.admin_workers'))
-
-@admin_bp.route('/admin/update_worker', methods=['POST'])
-@login_required
-def update_worker():
-    if current_user.role != 'admin':
-        return "Access Denied", 403
-    
-    username = request.form.get('username')
-    specialization = request.form.get('specialization')
-    experience_years = request.form.get('experience_years')
-    status = request.form.get('status')
-    
-    user_model.update(username, {
-        'specialization': specialization,
-        'experience_years': int(experience_years),
-        'status': status
-    })
-    
-    flash(f"تم تحديث بيانات العامل بنجاح.", 'success')
-    return redirect(url_for('admin.admin_workers'))
 
 @admin_bp.route('/admin/analytics')
 @login_required
@@ -520,8 +456,8 @@ def manual_backup():
     try:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
         if not os.path.exists('backups'): os.makedirs('backups')
-        backup_path = f'backups/manual_backup_{timestamp}.json'
-        shutil.copy2('database.json', backup_path)
+        backup_path = f'backups/manual_backup_{timestamp}.sqlite'
+        shutil.copy2('ramadan_company.db', backup_path)
         security_log_model.create("Manual Backup", f"Admin {current_user.username} created a backup", severity="low")
         flash("تم إنشاء النسخة الاحتياطية بنجاح.")
         return send_file(backup_path, as_attachment=True)
@@ -715,22 +651,13 @@ def admin_inspections():
 @admin_bp.route('/admin/inspection/<request_id>/assign', methods=['POST'])
 @login_required
 def assign_inspection(request_id):
-    """Assign worker or admin to inspection"""
+    """Assign admin to inspection"""
     if current_user.role != 'admin':
         return "Access Denied", 403
     
-    assignment_type = request.form.get('assignment_type') # 'worker' or 'admin'
-    
-    if assignment_type == 'admin':
-        inspection_model.assign_admin_visit(request_id)
-        flash('تم تعيين المعاينة للإدارة', 'success')
-    else:
-        worker_username = request.form.get('worker_username')
-        if worker_username:
-            inspection_model.assign_worker(request_id, worker_username)
-            flash(f'تم تعيين المعاينة للصنايعي {worker_username}', 'success')
-        else:
-            flash('الرجاء اختيار صنايعي', 'error')
+    # Always assign to admin since workers are removed
+    inspection_model.assign_admin_visit(request_id)
+    flash('تم تعيين المعاينة للإدارة', 'success')
             
     return redirect(url_for('admin.admin_inspections'))
 
@@ -738,7 +665,7 @@ def assign_inspection(request_id):
 @admin_bp.route('/admin/inspection/<request_id>/details')
 @login_required
 def inspection_details(request_id):
-    """Get inspection details and nearby workers via AJAX"""
+    """Get inspection details"""
     if current_user.role != 'admin':
         return jsonify({'error': 'Unauthorized'}), 403
         
@@ -746,18 +673,9 @@ def inspection_details(request_id):
     if not req:
         return jsonify({'error': 'Request not found'}), 404
         
-    # Find nearest workers
-    nearby_workers = inspection_model.find_nearest_workers(
-        user_lat=req['user_latitude'],
-        user_lon=req['user_longitude'],
-        service_type=req['service_type'],
-        max_distance=100, # Search wider range for admin
-        limit=10
-    )
-    
     return jsonify({
         'request': req,
-        'nearby_workers': nearby_workers
+        'nearby_workers': []
     })
 
 
@@ -781,31 +699,31 @@ def approve_inspection_report(request_id):
         
     return redirect(url_for('admin.admin_inspections'))
 
-@admin_bp.route('/admin/verifications')
-@login_required
-def admin_verifications():
-    """Admin: Verification Requests"""
-    if current_user.role != 'admin':
-        return "Access Denied", 403
-        
-    pending = user_model.get_pending_verifications()
-    return render_template('admin_verifications.html', pending=pending)
 
-@admin_bp.route('/admin/verify/<username>', methods=['POST'])
+
+@admin_bp.route('/admin/transfers')
 @login_required
-def process_verification(username):
-    """Admin: Accept/Reject Verification"""
+def admin_transfers():
+    """Admin: Transfers List"""
     if current_user.role != 'admin':
         return "Access Denied", 403
         
-    action = request.form.get('action')
-    notes = request.form.get('notes')
+    payments = payment_model.get_all()
+    # Sort by timestamp desc
+    payments.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
     
-    if action == 'approve':
-        user_model.verify_user(username, 'verified', notes)
-        flash(f'تم توثيق الحساب للصنايعي {username}', 'success')
-    elif action == 'reject':
-        user_model.verify_user(username, 'rejected', notes)
-        flash(f'تم رفض توثيق الصنايعي {username}', 'warning')
+    # Calculate confirmed total
+    confirmed_total = sum(float(p.get('amount', 0)) for p in payments if str(p.get('status', '')).lower() == 'confirmed')
+    
+    return render_template('admin_transfers.html', payments=payments, total_confirmed=confirmed_total)
+
+@admin_bp.route('/admin/payment/confirm/<doc_id>', methods=['POST'])
+@login_required
+def confirm_payment(doc_id):
+    """Admin: Confirm a payment"""
+    if current_user.role != 'admin':
+        return "Access Denied", 403
         
-    return redirect(url_for('admin.admin_verifications'))
+    payment_model.update_status(doc_id, 'Confirmed')
+    flash('تم تأكيد التحويل بنجاح', 'success')
+    return redirect(url_for('admin.admin_transfers'))

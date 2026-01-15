@@ -18,7 +18,7 @@ class Config:
     RATELIMIT_STORAGE_URL = "memory://"
     
     # Database
-    DATABASE_PATH = 'database.json'
+    DATABASE_PATH = 'ramadan_company.db'
     BACKUP_DIR = 'backups'
     
     # File Uploads

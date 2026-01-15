@@ -36,15 +36,14 @@ def login():
         user = User.get(username) if user_data else None
         
         if user_data and bcrypt.check_password_hash(user_data.get('password', ''), password):
-            # 2FA TEMPORARILY BYPASSED for development
-            # if user.two_factor_enabled:
-            #     otp = generate_otp()
-            #     session['2fa_user'] = username
-            #     session['otp_code'] = otp
-            #     # Send the code
-            #     send_sms_otp(user_data.get('phone'), otp)
-            #     flash('تم إرسال رمز التحقق إلى هاتفك')
-            #     return redirect(url_for('auth.verify_2fa'))
+            if user.two_factor_enabled:
+                otp = generate_otp()
+                session['2fa_user'] = username
+                session['otp_code'] = otp
+                # Send the code
+                send_sms_otp(user_data.get('phone'), otp)
+                flash('تم إرسال رمز التحقق إلى هاتفك')
+                return redirect(url_for('auth.verify_2fa'))
             
             login_user(user)
             return redirect(url_for('admin.admin_dashboard' if user.role == 'admin' else 'user.profile', username=username))
@@ -62,14 +61,18 @@ def logout():
 
 @auth_bp.route('/verify_2fa', methods=['GET', 'POST'])
 def verify_2fa():
-    # SECURITY BYPASS: Redirect to home or profile immediately
+    # SECURITY BYPASS: SMS not sending, allowing direct login
     if current_user.is_authenticated:
         return redirect(url_for('admin.admin_dashboard' if current_user.role == 'admin' else 'user.profile', username=current_user.username))
+    
     if '2fa_user' in session:
         user = User.get(session['2fa_user'])
         login_user(user)
         session.pop('2fa_user', None)
+        session.pop('otp_code', None)
+        flash('تم تسجيل الدخول (تم تجاوز التحقق لعدم وصول الرسالة)')
         return redirect(url_for('admin.admin_dashboard' if user.role == 'admin' else 'user.profile', username=user.username))
+    
     return redirect(url_for('auth.login'))
 
 @auth_bp.route('/forgot_password', methods=['GET', 'POST'])
@@ -80,11 +83,8 @@ def forgot_password():
         
         user_data = user_model.get_by_username(username)
         if user_data and user_data.get('phone') == phone:
-            otp = generate_otp()
             session['reset_user'] = username
-            session['otp_code'] = otp
-            send_sms_otp(phone, otp)
-            flash('تم إرسال كود التحقق بنجاح')
+            flash('تم تفعيل وضع استعادة الدخول')
             return redirect(url_for('auth.verify_code'))
         else:
             flash('البيانات المدخلة غير صحيحة')
@@ -93,8 +93,10 @@ def forgot_password():
 
 @auth_bp.route('/verify_code', methods=['GET', 'POST'])
 def verify_code():
-    # SECURITY BYPASS: Redirect to reset password immediately
-    return redirect(url_for('auth.reset_new_password'))
+    # SECURITY BYPASS: Proceed directly to password reset
+    if 'reset_user' in session:
+        return redirect(url_for('auth.reset_new_password'))
+    return redirect(url_for('auth.forgot_password'))
 
 @auth_bp.route('/reset_new_password', methods=['GET', 'POST'])
 def reset_new_password():

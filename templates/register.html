@@ -50,22 +50,7 @@
                     </div>
                 </div>
 
-                <div class="form-group mb-4" data-aos="fade-up" data-aos-delay="50">
-                    <label class="d-block mb-3">نوع الحساب</label>
-                    <div class="role-selector">
-                        <input type="radio" name="role" value="user" id="role_user" class="role-radio" checked>
-                        <label for="role_user" class="role-label">
-                            <i class="fas fa-user-tie mb-2"></i>
-                            <span>عميل (مشروع)</span>
-                        </label>
-
-                        <input type="radio" name="role" value="worker" id="role_worker" class="role-radio">
-                        <label for="role_worker" class="role-label" id="label_worker">
-                            <i class="fas fa-tools mb-2"></i>
-                            <span>صنايعي (عمل)</span>
-                        </label>
-                    </div>
-                </div>
+                <input type="hidden" name="role" value="user">
 
                 <div id="user_fields">
                     <div class="form-group" data-aos="fade-up" data-aos-delay="350">
@@ -73,21 +58,6 @@
                         <textarea name="project_description"
                             placeholder="اكتب وصفاً مختصراً لمشروعك (مثال: شقة 150 متر، تشطيب كامل...)"
                             style="min-height: 80px;"></textarea>
-                    </div>
-                </div>
-
-                <div id="worker_fields" style="display: none;">
-                    <div class="form-group" data-aos="fade-up" data-aos-delay="350">
-                        <label>التخصص (الصنعة)</label>
-                        <select name="specialization" class="form-select-premium">
-                            <option value="painter">نقاش / دهانات</option>
-                            <option value="assistant">مساعد / عامل</option>
-                            <option value="other">تخصص آخر</option>
-                        </select>
-                    </div>
-                    <div class="form-group" data-aos="fade-up" data-aos-delay="360">
-                        <label>سنوات الخبرة</label>
-                        <input type="number" name="experience_years" placeholder="0" min="0">
                     </div>
                 </div>
 
@@ -128,21 +98,6 @@
             fileName.textContent = 'اختر صورة';
         }
     }
-
-    // Role Toggle Logic
-    document.querySelectorAll('input[name="role"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            const userFields = document.getElementById('user_fields');
-            const workerFields = document.getElementById('worker_fields');
-            if (e.target.value === 'worker') {
-                userFields.style.display = 'none';
-                workerFields.style.display = 'block';
-            } else {
-                userFields.style.display = 'block';
-                workerFields.style.display = 'none';
-            }
-        });
-    });
 </script>
 
 <style>

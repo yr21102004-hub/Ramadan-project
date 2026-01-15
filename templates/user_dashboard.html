@@ -21,7 +21,7 @@
         <!-- Quick Stats Cards -->
         <div class="row mb-5 g-4" data-aos="fade-up">
             <div class="col-lg-3 col-md-6">
-                <div class="stat-card glass h-100">
+                <div class="stat-card glass h-100" onclick="switchTab('tab-progress')" style="cursor: pointer;">
                     <div class="stat-icon bg-gold-gradient">
                         <i class="fas fa-percentage"></i>
                     </div>
@@ -32,7 +32,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="stat-card glass h-100">
+                <div class="stat-card glass h-100" onclick="switchTab('tab-requests')" style="cursor: pointer;">
                     <div class="stat-icon bg-blue-gradient">
                         <i class="fas fa-file-invoice"></i>
                     </div>
@@ -43,7 +43,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="stat-card glass h-100">
+                <div class="stat-card glass h-100" onclick="switchTab('tab-finance')" style="cursor: pointer;">
                     <div class="stat-icon bg-green-gradient">
                         <i class="fas fa-receipt"></i>
                     </div>
@@ -54,7 +54,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="stat-card glass h-100">
+                <div class="stat-card glass h-100" onclick="switchTab('tab-ai')" style="cursor: pointer;">
                     <div class="stat-icon bg-purple-gradient">
                         <i class="fas fa-robot"></i>
                     </div>
@@ -110,7 +110,7 @@
                                 <div class="progress"
                                     style="height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px;">
                                     <div class="progress-bar progress-bar-animated bg-gold-gradient"
-                                        style="width: {{ user.project_percentage or 0 }}%"></div>
+                                        style="width: {{ user.project_percentage or 0 }}%;"></div>
                                 </div>
                             </div>
 
@@ -301,6 +301,9 @@
                             <i class="fas fa-shield-alt me-1"></i> لوحة الإدارة
                         </a>
                         {% endif %}
+                        <a href="{{ url_for('admin.setup_2fa') }}" class="btn btn-outline-gold mb-2">
+                            <i class="fas fa-lock me-1"></i> تأمين الحساب (2FA)
+                        </a>
                         <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger">
                             <i class="fas fa-sign-out-alt me-1"></i> تسجيل الخروج
                         </a>
@@ -587,4 +590,21 @@
         }
     }
 </style>
+
+<script>
+    function switchTab(tabId) {
+        // Find the button that controls this tab
+        const tabTriggerEl = document.querySelector(`button[data-bs-target="#${tabId}"]`);
+        if (tabTriggerEl) {
+            // Use Bootstrap Tab API to show the tab
+            const tab = new bootstrap.Tab(tabTriggerEl);
+            tab.show();
+
+            // Optional: Smooth scroll to the tabs section if on mobile
+            if (window.innerWidth < 992) {
+                document.querySelector('.glass-tabs-container').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }
+</script>
 {% endblock %}

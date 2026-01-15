@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="section-padding admin-section-bg">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5" data-aos="fade-down">
+            <div>
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-outline-light btn-sm mb-3">
+                    <i class="fas fa-arrow-right me-2"></i> العودة للوحة التحكم
+                </a>
+                <h2 class="section-title mb-0">قائمة التحويلات المالية</h2>
+                <p class="text-muted mt-2">عرض وإدارة التحويلات المالية المؤكدة</p>
+            </div>
+            <div>
+                <div class="card bg-success text-white">
+                    <div class="card-body py-2 px-4">
+                        <small class="d-block opacity-75">إجمالي التحويلات المؤكدة</small>
+                        <h4 class="mb-0 fw-bold">{{ total_confirmed }} ج.م</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transfers Table -->
+        <div class="glass rounded p-4 mb-5" data-aos="fade-up">
+            <h4 class="text-gold mb-4"><i class="fas fa-file-invoice-dollar me-2"></i> سجل التحويلات</h4>
+
+            {% if payments %}
+            <div class="table-responsive">
+                <table class="table modern-table" id="transfersTable">
+                    <thead>
+                        <tr>
+                            <th>المستخدم</th>
+                            <th>المبلغ</th>
+                            <th>وسيلة الدفع</th>
+                            <th>رقم العملية</th>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in payments %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-white">{{ p.username }}</div>
+                                <div class="small text-muted">{{ p.full_name }}</div>
+                            </td>
+                            <td class="text-gold fw-bold">{{ p.amount }} ج.م</td>
+                            <td><span class="badge bg-primary">{{ p.method }}</span></td>
+                            <td class="font-monospace">{{ p.transaction_id }}</td>
+                            <td class="small">{{ p.timestamp }}</td>
+                            <td>
+                                {% if 'success' in p.status.lower() and 'pending' in p.status.lower() %}
+                                <span class="badge bg-warning text-dark">قيد المراجعة</span>
+                                {% elif p.status == 'Confirmed' %}
+                                <span class="badge bg-success">مؤكدة</span>
+                                {% elif 'failed' in p.status.lower() %}
+                                <span class="badge bg-danger">فشلت</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ p.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if 'pending' in p.status.lower() %}
+                                <form method="POST" action="{{ url_for('admin.confirm_payment', doc_id=p.doc_id) }}"
+                                    style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-success" title="تأكيد التحويل">
+                                        <i class="fas fa-check"></i> تأكيد
+                                    </button>
+                                </form>
+                                {% else %}
+                                <button class="btn btn-sm btn-secondary" disabled>
+                                    <i class="fas fa-check-double"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-money-check-alt fa-3x mb-3 opacity-25"></i>
+                <p>لا توجد تحويلات مسجلة</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<style>
+    .admin-section-bg {
+        background: #0a0a0a;
+        min-height: 100vh;
+        padding-top: 100px;
+        direction: rtl;
+    }
+
+    .glass {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    .modern-table {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .modern-table thead {
+        background: rgba(212, 175, 55, 0.1);
+    }
+
+    .modern-table th {
+        color: var(--gold);
+        font-weight: 600;
+        padding: 15px;
+        border: none;
+    }
+
+    .modern-table td {
+        color: #ddd;
+        padding: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+    }
+
+    .modern-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .btn-gold {
+        background: var(--gold);
+        color: #000;
+        border: none;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+</style>
+{% endblock %}
