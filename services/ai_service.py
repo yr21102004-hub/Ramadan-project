@@ -168,6 +168,19 @@ class AIService:
             },
             {
                 "keywords_ar": [
+                    "خارجي", "خارجية", "الخارجي", "الخارجية", "واجهات", "وجهات", "الواجهات", "واجهة", 
+                    "بروفايل", "جرافيتو", "سفيتو", "حجر", "هاشمي", "فرعوني", "مايكا", "طوب", 
+                    "سور", "اسوار", "بلكونة من بره", "شباك من بره", "دهان العمارة"
+                ],
+                "keywords_en": [
+                    "external", "exterior", "outside", "outdoor", "facade", "facades", "front", 
+                    "profile", "grafito", "saveto", "stone", "fence", "balcony outside", "building paint"
+                ],
+                "response_ar": "أهلاً بك! نحن حالياً متخصصون في **الدهانات والديكورات الداخلية فقط** (الشقق، الفلل، والمكاتب من الداخل). 🏠\nلا ننفذ أعمال الواجهات الخارجية في الوقت الحالي.\nهل يمكنني مساعدتك في أي شيء يخص الديكور الداخلي؟ 😊",
+                "response_en": "Welcome! We currently specialize in **Interior Paints & Decor only** (Apartments, Villas, Offices inside). 🏠\nWe do not execute exterior facades at the moment.\nCan I help you with anything regarding interior decor? 😊"
+            },
+            {
+                "keywords_ar": [
                     "شروخ", "شرخ", "الشروخ", "شرخ في الحيطة", "شروخ في الحائط",
                     "تشقق", "تشققات", "التشققات", "متشققة", "مشروخة",
                     "تنمل", "ترييح", "كسر", "كسور", "مكسورة",
@@ -231,27 +244,126 @@ class AIService:
             },
             {
                 "keywords_ar": [
-                    "رطوبة", "رطوبه", "الرطوبة", "رطوبة في الحيطة",
-                    "نداوة", "ندى", "الندى", "نداوه",
-                    "مياه", "ميه", "المياه", "الميه", "مية",
-                    "تسرب", "تسريب", "التسرب", "تسرب مياه", "تسريب ميه",
-                    "عفن", "العفن", "فطريات", "الفطريات", "عفونة",
-                    "ريحة", "رايحة", "الريحة", "ريحة وحشة", "رايحة عفن",
-                    "مشكلة", "مشكله", "المشكلة", "عندي مشكلة", "في مشكلة",
-                    "حلول", "حل", "الحل", "الحلول", "علاج", "معالجة",
-                    "ازاي اعالج", "ايه الحل", "عاوز حل", "محتاج حل",
-                    "الحيطة مبلولة", "الجدار فيه ميه", "في تسريب"
+                    "1", "١", "تقشر", "بيقشر", "مقشر", "الدهان بيقع", "قشرة", "قشور", "تساقط", "بيسقط", "واقع", 
+                    "الدهان بيتشال", "طبقات بتقع", "تقشير", "ازالة الدهان", "الدهان بيفك", "بيفك", 
+                    "بيفرول", "بيطلع", "بيتقلع", "دهان قديم بيقع", "الحيطة بتقشر", "السقف بيقشر",
+                    "نقشر", "تقشيط", "سقوط الدهان", "انفصال الدهان", "البيت بيقشر"
                 ],
                 "keywords_en": [
-                    "humidity", "moisture", "dampness", "damp", "wet", "wetness",
-                    "water", "water problem", "leak", "leakage", "leaking",
-                    "mold", "mould", "fungus", "mildew",
-                    "smell", "bad smell", "odor", "odour",
-                    "problem", "issue", "solution", "fix", "repair",
-                    "how to fix", "need solution", "wet wall", "damp wall"
+                    "peeling", "paint peeling", "flaking", "flakes", "falling off", "paint coming off", 
+                    "strips", "layers peeling", "detachment", "loose paint", "paint lifting", "scaling", 
+                    "blistering and peeling", "paint stripping", "old paint falling", "wall peeling", 
+                    "ceiling peeling", "paint separation", "coat peeling", "paint chip", "chipping"
                 ],
-                "response_ar": "مشكلة الرطوبة لها حلول جذرية! 💧\n\n🔹 **الأسباب الشائعة:**\n• تسرب مياه من السباكة أو الأسطح\n• سوء التهوية\n• عزل ضعيف للحوائط الخارجية\n\n🔹 **الحلول المهنية:**\n1️⃣ **كشف المصدر:** نحدد مصدر التسرب بدقة\n2️⃣ **العزل المائي:** نستخدم مواد عزل حديثة (سيكا، بيتومين)\n3️⃣ **المعالجة:** إزالة الطبقات المتضررة وتطهير الحائط\n4️⃣ **الدهان المضاد:** استخدام دهانات مقاومة للرطوبة\n\n✅ نضمن لك حل نهائي مع ضمان على العمل!\nتواصل معنا للمعاينة المجانية: 01129276218 📞",
-                "response_en": "Humidity problems have permanent solutions! 💧\n\n🔹 **Common Causes:**\n• Water leakage from plumbing or roofs\n• Poor ventilation\n• Weak insulation of external walls\n\n🔹 **Professional Solutions:**\n1️⃣ **Source Detection:** We accurately identify the leak source\n2️⃣ **Waterproofing:** Using modern insulation materials (Sika, Bitumen)\n3️⃣ **Treatment:** Removing damaged layers and sanitizing the wall\n4️⃣ **Anti-Moisture Paint:** Using humidity-resistant paints\n\n✅ We guarantee a permanent solution with work warranty!\nContact us for free inspection: 01129276218 📞"
+                "response_ar": "1️⃣ تقشّر الدهان\n\n🔹 الأسباب من الأصل:\n• وجود رطوبة أو تسريب مياه\n• دهان فوق سطح مترب أو دهان قديم\n• عدم استخدام برايمر (الأساس)\n\n🔹 الحلول:\n• إزالة الدهان المتقشّر تمامًا\n• معالجة الرطوبة أو التسريب\n• تنظيف وصنفرة السطح\n• وضع برايمر مناسب ثم إعادة الدهان\n\n🔧 نصيحة مهمة\n70٪ من مشاكل الدهانات سببها تجهيز السطح الخاطئ وليس الدهان نفسه.",
+                "response_en": "Peeling paint is annoying, but fixable! 🏚️\n\n🔹 **Cause:** Often due to moisture, dirty surface before painting, or poor putty.\n🔹 **Solution:**\n1. Scrape off all old paint.\n2. Sand and clean the wall thoroughly.\n3. Apply a strong Primer to ensure adhesion.\n4. Repaint with high-quality materials.\n\nContact us to handle it for you! 01129276218 📞"
+            },
+            {
+                "keywords_ar": [
+                    "2", "٢", "شروخ", "شرخ", "تشقق", "تشققات", "تنميل", "تنميلات", "نمملة", "منملة", "ترييح", 
+                    "الحيطة مريحة", "صدع", "تصدع", "شق", "شقوق", "كسر", "كسور", "الحيطة مشروخة", 
+                    "الجدار مشروخ", "السقف مشروخ", "شرخ في الحائط", "شرخ عمودي", "شرخ افقي", "شروخ شعرية",
+                    "شرخ في الزاوية", "شروخ سطحية", "شروخ عميقة", "حيطتي مشققة"
+                ],
+                "keywords_en": [
+                    "cracks", "crack", "cracking", "fissure", "fissures", "hairline cracks", "wall cracked", 
+                    "split", "fracture", "fractured", "broken wall", "structural cracks", "settlement cracks", 
+                    "plaster cracks", "ceiling cracks", "wall splitting", "gap in wall", "deep crack", 
+                    "surface crack", "spider web cracks", "cracked paint"
+                ],
+                "response_ar": "2️⃣ تشققات الدهان\n\n🔹 الأسباب:\n• دهان طبقات سميكة مرة واحدة\n• استخدام دهان رديء الجودة\n• تمدد وانكماش الجدار بسبب الحرارة\n\n🔹 الحلول:\n• كشط المناطق المتشققة\n• ملء الشروخ بالمعجون\n• دهان بطبقات خفيفة ومتعددة\n• اختيار دهان مرن وجيد\n\n🔧 نصيحة مهمة\n70٪ من مشاكل الدهانات سببها تجهيز السطح الخاطئ وليس الدهان نفسه.",
+                "response_en": "Cracks vary, but we have the cure! 🧱\n\n🔹 **Surface Cracks:** Treated with flexible crack putty and new paint.\n🔹 **Deep Cracks (Structural):** Need opening the crack, applying 'Mesh Tape' with premium putty to bind parts.\n\nDon't ignore cracks, request a free inspection now: 01129276218 📞"
+            },
+            {
+                "keywords_ar": [
+                    "3", "٣", "فقاعات", "فقاقيع", "بقللة", "مبقلل", "الدهان مبقع", "منفوخ", "نفخ", "انتفاخ", 
+                    "الدهان منفوخ", "بالونات", "بلالين", "هوا تحت الدهان", "ميه تحت الدهان", "تقبب", 
+                    "قبة", "معبي هوا", "طرطشة", "حبوب", "محبب", "الدهان محبب", "بشابيش", "فقاعة"
+                ],
+                "keywords_en": [
+                    "bubbles", "bubbling", "blisters", "blistering", "paint bubbles", "swollen paint", 
+                    "swelling", "air pockets", "trapped air", "paint puffing", "ballooning", "paint lifting", 
+                    "uneven surface", "bumps", "lumps in paint", "paint rising", "water blisters", 
+                    "solvent blisters", "heat blisters", "moisture blisters", "bubbled"
+                ],
+                "response_ar": "3️⃣ فقاعات الدهان\n\n🔹 الأسباب:\n• دهان على سطح رطب\n• الدهان في جو حار جدًا\n• استخدام رولة أو فرشة غير نظيفة\n\n🔹 الحلول:\n• ترك السطح يجف تمامًا\n• إزالة الفقاعات بعد الجفاف\n• إعادة الدهان في درجة حرارة معتدلة\n\n🔧 نصيحة مهمة\n70٪ من مشاكل الدهانات سببها تجهيز السطح الخاطئ وليس الدهان نفسه.",
+                "response_en": "Bubbles mean the paint isn't breathing or moisture is trapped! 🫧\n\n🔹 **Solution:**\n1. Scrape bubbles and remove swollen paint.\n2. Let the wall dry completely (if moisture is the cause).\n3. Sand and smooth the surface.\n4. Use high-quality breathable paint.\n\nWe are here to help! 😊"
+            },
+            {
+                "keywords_ar": [
+                    "5", "٥", "بهتان", "باهت", "لون متغير", "تغير اللون", "اللون راح", "اللون طار", "اصفرار", 
+                    "مصفر", "اللون بيغير", "مش نفس اللون", "اللون اختلف", "تلطيش", "ملطش", "بقع لون", 
+                    "لون مش موحد", "الوان مش متجانسة", "اللون طفى", "مطفي", "لمعة راحت", "تباين في اللون",
+                    "اللون جرب", "لون الحيطة اتغير", "الدهان غير"
+                ],
+                "keywords_en": [
+                    "fading", "faded", "discoloration", "discolouration", "yellowing", "color change", 
+                    "colour change", "losing color", "dull paint", "paint dulled", "uneven color", 
+                    "patchy color", "color mismatch", "bleaching", "sun damage", "chalking", "staining", 
+                    "uneven shade", "loss of gloss", "flat spots"
+                ],
+                "response_ar": "5️⃣ بهتان أو تغيّر لون الدهان\n\n🔹 الأسباب:\n• التعرض المباشر للشمس\n• دهان غير مقاوم للأشعة فوق البنفسجية\n• استخدام لون ضعيف الثبات\n\n🔹 الحلول:\n• اختيار دهان مقاوم للشمس\n• إضافة طبقة حماية شفافة\n• استخدام ألوان خارجية مخصصة\n\n🔧 نصيحة مهمة\n70٪ من مشاكل الدهانات سببها تجهيز السطح الخاطئ وليس الدهان نفسه.",
+                "response_en": "Discoloration ruins your home's beauty! 🎨\nOften caused by direct sunlight or cheap paints.\n\n✅ **Our Advice:** We use UV-resistant paints (Jotun/GLC) that last for years vividly.\nRefresh your home colors with us using the best materials! ✨"
+            },
+            {
+                "keywords_ar": [
+                    "4", "٤", "رطوبة", "عفن", "فطريات", "بقع خضراء", "بقع سوداء", "الحيطة مرشحة", "نشع", 
+                    "بتنشع", "مياه في الحيطة", "ميه", "تمليح", "املاح", "ريحة عفن", "ريحة كمكمة", 
+                    "كمكمة", "الحيطة منشعة", "الجدار مبلول", "ساقعة", "الحيطة بتجيب ميه", "تسريب مياه",
+                    "الحيطة معرقة", "تعريق", "مايه", "حائط رطب", "رشح"
+                ],
+                "keywords_en": [
+                    "humidity", "moisture", "damp", "dampness", "mold", "mould", "mildew", "fungus", 
+                    "fungi", "green spots", "black spots", "wet wall", "water stain", "salt deposits", 
+                    "efflorescence", "musty smell", "water seeping", "wall sweating", "condensation", 
+                    "water leak", "leaking water", "wet spots", "damp patch"
+                ],
+                "response_ar": "4️⃣ بقع الرطوبة والعفن\n\n🔹 الأسباب:\n• تسريب مياه أو تكثف بخار\n• ضعف التهوية\n• عدم استخدام دهان مقاوم للرطوبة\n\n🔹 الحلول:\n• معالجة مصدر الرطوبة أولًا\n• تنظيف العفن بمحلول مطهر\n• استخدام دهان مقاوم للرطوبة والعفن\n\n🔧 نصيحة مهمة\n70٪ من مشاكل الدهانات سببها تجهيز السطح الخاطئ وليس الدهان نفسه.",
+                "response_en": "Humidity problems have permanent solutions! 💧\n\n🔹 **Common Causes:** Water leakage or poor ventilation.\n🔹 **Professional Solution:**\n1️⃣ **Detect & Fix** the source.\n2️⃣ **Waterproofing** with specialized materials (Sika/Bitumen).\n3️⃣ **Anti-Moisture Paint**.\n\nContact us for free inspection: 01129276218 📞"
+            },
+            {
+                "keywords_ar": [
+                    "6", "٦", "اثار الفرشاة", "اثار الرولة", "خطوط", "مخطط", "الدهان مخطط", "مش ناعم", "خشن", 
+                    "تسييل", "ممسح", "علامات الرولة", "علامات الفرشاة", "ريجة", "خطوط طولية", "خطوط عرضية", 
+                    "عيوب فرد", "الدهان مش مفرود", "تكتل", "مكلكع", "كلكعة", "الدهان سايل", "تلطيخ", 
+                    "الرولة معلمة", "الفرشة معلمة"
+                ],
+                "keywords_en": [
+                    "brush marks", "roller marks", "brush strokes", "roller strokes", "streaks", "streaking", 
+                    "lines in paint", "ridges", "uneven texture", "running paint", "drips", "sagging", 
+                    "lap marks", "stippling", "orange peel", "poor flow", "leveling issues", "application marks", 
+                    "tool marks", "bumpy finish"
+                ],
+                "response_ar": "6️⃣ آثار الفرشاة أو الرولة\n\n🔹 الأسباب:\n• دهان ثقيل وغير مخفف\n• أدوات سيئة الجودة\n• دهان غير متساوٍ\n\n🔹 الحلول:\n• تخفيف الدهان حسب تعليمات الشركة\n• استخدام رولة وفرش جيدة\n• الدهان باتجاه واحد وبهدوء\n\n🔧 نصيحة مهمة\n70٪ من مشاكل الدهانات سببها تجهيز السطح الخاطئ وليس الدهان نفسه.",
+                "response_en": "Brush and roller marks indicate lack of experience or improper paint thinning. 🖌️\nFor a silk-smooth finish:\n• Wall must be sanded flat.\n• Apply a new coat using high-quality roller and professional technique.\n\nTry the professional touch with us! 👌"
+            },
+            {
+                "keywords_ar": [
+                    "7", "٧", "شفافية", "شفاف", "الدهان شفاف", "الحيطة باينة", "اللون القديم باين", "تغطية ضعيفة", 
+                    "مش مغطي", "خفيف", "دهان خفيف", "وش واحد", "محتاج وش تاني", "مش ساتر", "كشف", 
+                    "كاشف", "اللون ماغطاش", "مسيل", "تسييل خفيف", "تغطية سيئة", "عيوب تغطية", "باهت جدا",
+                    "الدهان مش كاسي", "اللون كاشف"
+                ],
+                "keywords_en": [
+                    "transparency", "transparent", "see-through", "poor coverage", "not covering", 
+                    "hiding power", "low opacity", "wall showing through", "old color showing", "thin paint", 
+                    "watery paint", "sheer", "translucent", "need more coats", "coverage issues", "paint too thin", 
+                    "bleed through", "underlying surface visible", "weak color", "insufficient coverage"
+                ],
+                "response_ar": "7️⃣ الدهان غير ساتر (ضعف التغطية)\n\n🔹 الأسباب:\n• لون أساس داكن\n• دهان منخفض الجودة\n• عدم استخدام برايمر\n• طبقة واحدة فقط\n\n🔹 الحلول:\n• استخدام برايمر مناسب\n• زيادة عدد الطبقات\n• اختيار دهان عالي التغطية\n• توحيد لون السطح قبل الدهان\n\n🔧 نصيحة مهمة\n70٪ من مشاكل الدهانات سببها تجهيز السطح الخاطئ وليس الدهان نفسه.",
+                "response_en": "If paint is transparent, it's too thin or coats are insufficient. 📉\n\n🔹 **Solution:**\n• Apply an additional coat.\n• Use paints with high 'Hiding Power' like Jotun Fenomastic.\nWe'll make your walls solid and rich in color! 🌈"
+            },
+            {
+                "keywords_ar": [
+                    "مشكلة", "مشكله", "المشكلة", "عندي مشكلة", "في مشكلة", 
+                    "واجهتني مشكلة", "صادفتني مشكلة", "خطأ", "غلط", "help", "مساعدة"
+                ],
+                "keywords_en": [
+                    "problem", "issue", "i have a problem", "there is a problem",
+                    "trouble", "error", "bug", "wrong", "help me"
+                ],
+                "response_ar": "قل لي ما هي المشكلة بالتحديد؟ 🤔 هل هي:\n1) تقشّر الدهان؟\n2) تشققات الدهان 🧱\n3) ظهور فقاعات 🫧\n4) تغيّر اللون أو بهتانه 🎨\n5) بقع الرطوبة والعفن 💧\n6) آثار الفرشاة أو الرولة 🖌️\n7) شفافية الدهان\n\nاكتب لي تفاصيل أكتر وهساعدك فوراً!",
+                "response_en": "Tell me, what is the problem exactly? 🤔 Is it:\n1) Peeling paint?\n2) Cracks? 🧱\n3) Bubbles? 🫧\n4) Discoloration? 🎨\n5) Humidity & Mold? 💧\n6) Brush marks? 🖌️\n7) Transparency?\n\nPlease provide more details so I can help you!"
             }
         ]
 
@@ -338,16 +450,28 @@ class AIService:
             matched = False
             
             # Check Arabic keywords
+            msg_words = set(msg_norm.split())
             for kw in entry['keywords_ar']:
                 kw_norm = self.normalize_text(kw)
-                if kw_norm in msg_norm or (kw_norm in msg_keywords):
+                # Smart Match: Simple/Short keywords must be exact words (to avoid matching '1' in '010..')
+                if len(kw_norm) < 3:
+                    if kw_norm in msg_words:
+                        matched = True
+                        break
+                elif kw_norm in msg_norm or (kw_norm in msg_keywords):
                     matched = True
                     break
             
             # If no Arabic match, check English keywords
             if not matched:
+                msg_lower_words = set(message.lower().split())
                 for kw in entry['keywords_en']:
-                    if kw.lower() in message.lower() or (kw.lower() in msg_keywords):
+                    kw_lower = kw.lower()
+                    if len(kw_lower) < 3:
+                        if kw_lower in msg_lower_words:
+                            matched = True
+                            break
+                    elif kw_lower in message.lower() or (kw_lower in msg_keywords):
                         matched = True
                         break
             

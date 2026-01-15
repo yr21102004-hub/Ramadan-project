@@ -4,7 +4,7 @@ from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import os
-from models import UserModel, ContactModel, PaymentModel, ChatModel, UnansweredQuestionsModel, SubscriptionModel, ComplaintModel
+from models import UserModel, ContactModel, PaymentModel, ChatModel, UnansweredQuestionsModel, SubscriptionModel, ComplaintModel, RatingModel
 from websockets import notify_admins, broadcast_percentage_update
 
 user_bp = Blueprint('user', __name__)
@@ -16,6 +16,7 @@ chat_model = ChatModel()
 unanswered_model = UnansweredQuestionsModel()
 subscription_model = SubscriptionModel()
 complaint_model = ComplaintModel()
+rating_model = RatingModel()
 
 @user_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -127,52 +128,62 @@ def profile(username):
         return render_template('worker_dashboard.html', worker=worker_obj)
 
     # Standard User Dashboard logic
-    # Standard User Dashboard logic
-    user_obj = {
-        'id': user_data.get('id'),
-        'role': user_data.get('role'),
-        'full_name': user_data.get('full_name'),
-        'username': user_data.get('username'),
-        'email': user_data.get('email', 'لا يوجد'),
-        'phone': user_data.get('phone'),
-        'profile_image': user_data.get('profile_image'),
-        'project_location': user_data.get('project_location', 'غير محدد'),
-        'project_description': user_data.get('project_description', 'لا يوجد وصف'),
-        'project_percentage': user_data.get('project_percentage', 0),
-        'created_at': user_data.get('created_at')
-    }
-    
-    # Fetch user's previous requests (Inquiries/Inspections)
-    user_requests = contact_model.get_by_user(username)
-    user_requests.sort(key=lambda x: x.get('created_at', ''), reverse=True)
-    
-    # Fetch user's payments
-    user_payments = payment_model.get_by_user(username)
-    user_payments.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-    
-    # Fetch user's chat history
-    user_chats = chat_model.get_by_user(username)
-    user_chats.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-    
-    # Fetch user's unanswered questions (Pending AI questions)
-    user_unanswered = unanswered_model.get_by_user(username)
-    user_unanswered.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-    
-    # Fetch user's subscriptions
-    user_subscriptions = subscription_model.get_by_user(username)
+    try:
+        user_obj = {
+            'id': user_data.get('id'),
+            'role': user_data.get('role'),
+            'full_name': user_data.get('full_name'),
+            'username': user_data.get('username'),
+            'email': user_data.get('email', 'لا يوجد'),
+            'phone': user_data.get('phone'),
+            'profile_image': user_data.get('profile_image'),
+            'project_location': user_data.get('project_location', 'غير محدد'),
+            'project_description': user_data.get('project_description', 'لا يوجد وصف'),
+            'project_percentage': user_data.get('project_percentage', 0),
+            'created_at': user_data.get('created_at')
+        }
+        
+        # Fetch user's previous requests (Inquiries/Inspections)
+        user_requests = contact_model.get_by_user(username) or []
+        user_requests.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        
+        # Fetch user's payments
+        user_payments = payment_model.get_by_user(username) or []
+        user_payments.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        
+        # Fetch user's chat history
+        user_chats = chat_model.get_by_user(username) or []
+        user_chats.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        
+        # Fetch user's unanswered questions (Pending AI questions)
+        user_unanswered = unanswered_model.get_by_user(username) or []
+        user_unanswered.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        
+        # Fetch user's subscriptions
+        user_subscriptions = subscription_model.get_by_user(username) or []
 
-    # Fetch user's complaints
-    user_complaints = complaint_model.get_by_user(username)
-    user_complaints.sort(key=lambda x: x.get('created_at', ''), reverse=True)
-    
-    return render_template('user_dashboard.html', 
-                           user=user_obj, 
-                           requests=user_requests,
-                           payments=user_payments,
-                           chats=user_chats,
-                           unanswered=user_unanswered,
-                           subscriptions=user_subscriptions,
-                           complaints=user_complaints)
+        # Fetch user's complaints
+        user_complaints = complaint_model.get_by_user(username) or []
+        user_complaints.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+
+        # Fetch Project Rating
+        project_rating = rating_model.get_user_project_rating(username)
+        
+        return render_template('user_dashboard.html', 
+                            user=user_obj, 
+                            requests=user_requests,
+                            payments=user_payments,
+                            chats=user_chats,
+                            unanswered=user_unanswered,
+                            subscriptions=user_subscriptions,
+                            complaints=user_complaints,
+                            project_rating=project_rating)
+
+    except Exception as e:
+        print(f"Error accessing profile for {username}: {e}")
+        import traceback
+        traceback.print_exc()
+        return f"<h3>حدث خطأ أثناء تحميل الملف الشخصي:</h3><p>{str(e)}</p>", 500
 
 
 @user_bp.route('/admin/update_project_percentage', methods=['POST'])
@@ -232,4 +243,31 @@ def submit_complaint():
     )
     
     flash('تم تسجيل شكواك بنجاح. سيتم مراجعتها من قبل الإدارة والرد عليك هنا.', 'success')
+    return redirect(url_for('user.profile', username=current_user.username))
+
+@user_bp.route('/user/rate_project', methods=['POST'])
+@login_required
+def submit_project_rating():
+    """Submit rating for finished project"""
+    if current_user.role != 'user':
+        return "Access Denied", 403
+        
+    # Verify completion
+    if current_user.project_percentage != 100:
+        flash("لا يمكن تقديم تقييم إلا بعد اكتمال المشروع بنسبة 100%.", 'error')
+        return redirect(url_for('user.profile', username=current_user.username))
+        
+    rating = request.form.get('rating')
+    comment = request.form.get('comment')
+    
+    try:
+        rating = int(rating)
+        if not (1 <= rating <= 5): raise ValueError
+    except:
+        flash("التقييم يجب أن يكون بين 1 و 5 نجوم.", 'error')
+        return redirect(url_for('user.profile', username=current_user.username))
+        
+    result = rating_model.add_project_rating(current_user.username, rating, comment)
+    
+    flash(result['message'], 'success' if result['success'] else 'error')
     return redirect(url_for('user.profile', username=current_user.username))

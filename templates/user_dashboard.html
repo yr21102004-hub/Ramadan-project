@@ -125,26 +125,115 @@
                                 <div class="progress"
                                     style="height: 12px; background: rgba(255,255,255,0.05); border-radius: 10px;">
                                     <div class="progress-bar progress-bar-animated bg-gold-gradient"
-                                        style="width: {{ user.project_percentage or 0 }}%;"></div>
+                                        style="width: {{ user.project_percentage|default(0)|int }}%;"></div>
                                 </div>
                             </div>
 
                             <div class="timeline-steps row text-center">
-                                <div class="col-4 step-item {% if user.project_percentage >= 20 %}completed{% endif %}">
+                                <div
+                                    class="col-4 step-item {% if user.project_percentage|default(0)|int >= 20 %}completed{% endif %}">
                                     <div class="step-icon"><i class="fas fa-clipboard-check"></i></div>
                                     <p>المعاينة والرفع</p>
                                 </div>
-                                <div class="col-4 step-item {% if user.project_percentage >= 60 %}active{% endif %}">
+                                <div
+                                    class="col-4 step-item {% if user.project_percentage|default(0)|int >= 60 %}active{% endif %}">
                                     <div class="step-icon"><i class="fas fa-tools"></i></div>
                                     <p>التأسيس والدهان</p>
                                 </div>
                                 <div
-                                    class="col-4 step-item {% if user.project_percentage == 100 %}completed{% endif %}">
+                                    class="col-4 step-item {% if user.project_percentage|default(0)|int == 100 %}completed{% endif %}">
                                     <div class="step-icon"><i class="fas fa-flag-checkered"></i></div>
                                     <p>التسليم النهائي</p>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Rating Section (Only when 100% complete) -->
+                        {% if user.project_percentage|default(0)|int == 100 %}
+                        <div class="main-card glass p-4 mb-4" id="section-rating">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="text-gold mb-0"><i class="fas fa-star me-2"></i> تقييم المشروع</h5>
+                            </div>
+
+                            {% if project_rating %}
+                            <div class="text-center py-3">
+                                <div class="mb-3">
+                                    {% for i in range(project_rating.quality_rating) %}
+                                    <i class="fas fa-star fa-2x text-warning"></i>
+                                    {% endfor %}
+                                    {% for i in range(5 - project_rating.quality_rating) %}
+                                    <i class="far fa-star fa-2x text-muted"></i>
+                                    {% endfor %}
+                                </div>
+                                <h5 class="text-white mb-2">شكراً لتقييمك!</h5>
+                                {% if project_rating.comment %}
+                                <p class="text-white-50 mt-3 p-3"
+                                    style="background: rgba(255,255,255,0.05); border-radius: 10px;">
+                                    <i class="fas fa-quote-right opacity-50 me-2"></i>
+                                    {{ project_rating.comment }}
+                                    <i class="fas fa-quote-left opacity-50 ms-2"></i>
+                                </p>
+                                {% endif %}
+                                <div class="text-muted small mt-2">تم التقييم في: {{ project_rating.created_at[:10] }}
+                                </div>
+                            </div>
+                            {% else %}
+                            {% if current_user.username == user.username %}
+                            <div class="text-center">
+                                <p class="text-white mb-4">مبروك اكتمال المشروع! 🎉 يسعدنا معرفة رأيك في مستوى الخدمة.
+                                </p>
+                                <form action="{{ url_for('user.submit_project_rating') }}" method="POST">
+                                    <div class="rating-stars mb-4">
+                                        <input type="radio" name="rating" value="5" id="rs5" required><label
+                                            for="rs5">★</label>
+                                        <input type="radio" name="rating" value="4" id="rs4"><label for="rs4">★</label>
+                                        <input type="radio" name="rating" value="3" id="rs3"><label for="rs3">★</label>
+                                        <input type="radio" name="rating" value="2" id="rs2"><label for="rs2">★</label>
+                                        <input type="radio" name="rating" value="1" id="rs1"><label for="rs1">★</label>
+                                    </div>
+                                    <div class="mb-3 text-end">
+                                        <label class="form-label text-white-50">تعليقك (اختياري)</label>
+                                        <textarea name="comment" class="form-control" rows="3"
+                                            placeholder="اكتب ملاحظاتك هنا..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-gold px-5 rounded-pill">إرسال التقييم</button>
+                                </form>
+                                <style>
+                                    .rating-stars {
+                                        display: flex;
+                                        flex-direction: row-reverse;
+                                        justify-content: center;
+                                        gap: 15px;
+                                    }
+
+                                    .rating-stars input {
+                                        display: none;
+                                    }
+
+                                    .rating-stars label {
+                                        font-size: 2.5rem;
+                                        color: #444;
+                                        cursor: pointer;
+                                        transition: 0.2s;
+                                    }
+
+                                    .rating-stars input:checked~label,
+                                    .rating-stars label:hover,
+                                    .rating-stars label:hover~label {
+                                        color: #FFD700;
+                                        text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+                                    }
+                                </style>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="far fa-star fa-3x text-muted mb-3 opacity-50"></i>
+                                <p class="text-white-50">لم يقم العميل بتقييم المشروع بعد.</p>
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                        {% endif %}
 
                         <div class="main-card glass p-4">
                             <h5 class="text-gold mb-3"><i class="fas fa-info-circle me-2"></i> ملخص المواصفات</h5>
@@ -352,20 +441,15 @@
                                     </div>
 
                                     <!-- Chat Context (Last 2 messages before unanswered question) -->
+                                    <!-- Chat Context (Last 3 messages from this user) -->
                                     {% set user_chats_filtered = chats|selectattr('user_id', 'equalto',
                                     question.user_id)|list %}
-                                    {% if user_chats_filtered|length > 0 %}
+                                    {% if user_chats_filtered %}
                                     <div class="chat-context mb-3 p-2"
                                         style="background: rgba(0,0,0,0.2); border-radius: 8px;">
-                                        <small class="text-muted d-block mb-2"><i class="fas fa-history me-1"></i> سياق
-                                            المحادثة:</small>
-                                        {% set question_index =
-                                        user_chats_filtered|map(attribute='message')|list|index(question.question) if
-                                        question.question in user_chats_filtered|map(attribute='message')|list else -1
-                                        %}
-                                        {% if question_index > 0 %}
-                                        {% set start_index = [question_index - 2, 0]|max %}
-                                        {% for chat in user_chats_filtered[start_index:question_index] %}
+                                        <small class="text-muted d-block mb-2"><i class="fas fa-history me-1"></i> آخر
+                                            المحادثات:</small>
+                                        {% for chat in user_chats_filtered[:3] %}
                                         <div class="context-message mb-1">
                                             <small class="text-info"><i class="fas fa-user me-1"></i> المستخدم:</small>
                                             <small class="d-block ps-3">{{ chat.message }}</small>
@@ -373,7 +457,6 @@
                                             <small class="d-block ps-3">{{ chat.response }}</small>
                                         </div>
                                         {% endfor %}
-                                        {% endif %}
                                     </div>
                                     {% endif %}
 
@@ -388,6 +471,7 @@
                                     <!-- Admin Reply Form -->
                                     <form action="{{ url_for('admin.answer_unanswered_question') }}" method="POST"
                                         class="answer-form">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <input type="hidden" name="question_id" value="{{ question.doc_id }}">
                                         <input type="hidden" name="question_text" value="{{ question.question }}">
                                         <input type="hidden" name="user_id" value="{{ question.user_id }}">

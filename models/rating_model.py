@@ -70,6 +70,32 @@ class RatingModel:
         )
         return len(result) > 0
     
+    def get_user_project_rating(self, user_id):
+        """Get project rating by a specific user"""
+        result = self.table.search(
+            (self.query.user_id == user_id) & 
+            (self.query.worker_id == 'PROJECT')
+        )
+        return result[0] if result else None
+
+    def add_project_rating(self, user_id, rating, comment=""):
+        """Add a rating for the project itself"""
+        # Check if already rated
+        if self.get_user_project_rating(user_id):
+            return {'success': False, 'message': 'لقد قمت بتقييم المشروع بالفعل'}
+            
+        rating_data = {
+            'user_id': user_id,
+            'worker_id': 'PROJECT',
+            'quality_rating': rating,
+            'behavior_rating': 0, # Not applicable
+            'comment': comment,
+            'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        self.table.insert(rating_data)
+        return {'success': True, 'message': 'تم إضافة تقييمك للمشروع بنجاح'}
+    
     def get_all(self):
         """Get all ratings"""
         return self.table.all()

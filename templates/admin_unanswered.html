@@ -74,6 +74,7 @@
                         {% endif %}
 
                         <form method="POST" action="{{ url_for('admin.answer_question') }}" class="mt-auto">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="question" value="{{ q.question }}">
                             <div class="mb-2">
                                 <label class="form-label text-gold small">الرد المقترح (سيتم حفظه لتدريب الـ
@@ -93,6 +94,7 @@
                         </form>
                         <form id="delete-form-{{ loop.index }}" method="POST"
                             action="{{ url_for('admin.delete_answered_question') }}" style="display: none;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="question" value="{{ q.question }}">
                         </form>
                     </div>
