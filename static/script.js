@@ -130,10 +130,10 @@ async function submitContactForm() {
 /* Chat Widget Logic */
 document.addEventListener('DOMContentLoaded', () => {
     const chatWidget = document.getElementById('chat-widget');
-    const chatToggle = document.getElementById('chat-toggle');
+    const chatToggle = document.getElementById('chat-toggle-btn'); // Fixed ID
     const closeChat = document.getElementById('close-chat');
     const chatInput = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('chat-send');
+    const sendBtn = document.getElementById('send-chat-btn'); // Fixed ID
     const chatMessages = document.getElementById('chat-messages');
 
     let chatUserId = localStorage.getItem('chat_user_id');
