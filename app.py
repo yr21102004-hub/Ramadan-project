@@ -27,9 +27,6 @@ from controllers.inspection_controller import inspection_bp
 # Import WebSocket
 from websockets import init_socketio
 
-# Import Advanced Security Middleware
-from security_middleware import SecurityMiddleware
-
 # Load environment variables
 load_dotenv()
 
@@ -43,14 +40,12 @@ app.config.from_object(Config)
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
-    SESSION_COOKIE_SECURE=False,  # Set to True in production with HTTPS
     PERMANENT_SESSION_LIFETIME=1800 # 30 minutes session timeout
 )
 
 # Initialize extensions (CSRF initialized but disabled in config to avoid template errors)
 bcrypt = Bcrypt(app)
 csrf = CSRFProtect(app) 
-
 # Rate Limiting Configuration
 limiter = Limiter(
     key_func=get_remote_address,
@@ -61,9 +56,6 @@ limiter = Limiter(
 
 # CSRF is enabled by default via CSRFProtect(app) above.
 # We removed the line that disabled it.
-
-# Initialize Advanced Security Middleware (OSI Layer Protection)
-security = SecurityMiddleware(app)
 
 # Initialize WebSocket
 socketio = init_socketio(app)

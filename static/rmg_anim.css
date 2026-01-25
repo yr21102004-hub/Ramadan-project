@@ -1,0 +1,204 @@
+/* Light Animation Version 2 for RMG Logo */
+.preloader-v2 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #050505;
+    /* Deep rich black */
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.logo-container-v2 {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* The Animated Ring */
+.ring-v2 {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
+    border: 2px solid transparent;
+}
+
+.ring-v2:nth-child(1) {
+    border-top: 2px solid #D4AF37;
+    animation: spin-right 2s linear infinite;
+}
+
+.ring-v2:nth-child(2) {
+    width: 200px;
+    height: 200px;
+    border-bottom: 2px solid #F3D778;
+    animation: spin-left 2s linear infinite;
+}
+
+.ring-v2:nth-child(3) {
+    width: 180px;
+    height: 180px;
+    border-top: 2px solid transparent;
+    border-left: 2px solid rgba(212, 175, 55, 0.5);
+    animation: spin-right 3s linear infinite;
+}
+
+/* The Glowing Text Container */
+.logo-text-v2 {
+    font-family: 'Cairo', sans-serif;
+    font-size: 4.5rem;
+    font-weight: 900;
+    letter-spacing: 5px;
+    position: relative;
+    z-index: 10;
+    margin: 0;
+    line-height: 1;
+    display: flex;
+    /* Aligns spans in a row */
+    gap: 5px;
+}
+
+/* Individual Letters R M G */
+.logo-text-v2 span {
+    opacity: 0;
+    color: #D4AF37;
+    display: inline-block;
+    /* Use 'letter-reveal' animation */
+    animation: letter-reveal 3s infinite;
+}
+
+/* Seqential Delays for R, M, G */
+.logo-text-v2 span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.logo-text-v2 span:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.logo-text-v2 span:nth-child(3) {
+    animation-delay: 1s;
+}
+
+.logo-subtext-v2 {
+    font-family: 'Amiri', serif;
+    font-size: 1.2rem;
+    color: #D4AF37;
+    letter-spacing: 8px;
+    margin-top: 15px;
+    opacity: 0;
+    transform: translateY(10px);
+    /* Subtext fades in after letters start appearing, then fades out */
+    animation: subtext-cycle 3s infinite;
+    text-transform: uppercase;
+}
+
+/* Animations Keyframes */
+
+@keyframes spin-right {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spin-left {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+/* R M G Reveal Logic:
+   0% -> Hidden
+   10% -> Flash/Brightest (Light up)
+   20% -> Visible Gold
+   70% -> Stay Visible
+   90% -> Fade Out (Disappear)
+   100% -> Hidden (Loop)
+*/
+@keyframes letter-reveal {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+        text-shadow: none;
+        color: #444;
+        /* Dark start */
+    }
+
+    10% {
+        opacity: 1;
+        transform: scale(1.1);
+        color: #fff;
+        /* Bright white flash */
+        text-shadow: 0 0 20px #F3D778, 0 0 40px #D4AF37;
+        /* Strong Glow */
+    }
+
+    20% {
+        transform: scale(1);
+        color: #D4AF37;
+        /* Settle to Gold */
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    }
+
+    70% {
+        opacity: 1;
+        color: #D4AF37;
+        text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    }
+
+    90% {
+        opacity: 0;
+        transform: scale(0.9);
+        color: #444;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes subtext-cycle {
+
+    0%,
+    30% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    40% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    70% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    90% {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}

@@ -29,20 +29,255 @@
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <!-- Islamic Welcome Style -->
     <link rel="stylesheet" href="{{ url_for('static', filename='islamic_welcome.css') }}">
+
+    <!-- INLINE CRITICAL ANIMATION CSS TO BYPASS CACHE ISSUES -->
+    <style>
+        /* Light Animation Version 2 for RMG Logo */
+        .preloader-v2 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #050505;
+            /* Deep rich black */
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .logo-container-v2 {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+
+        /* The Glowing Text Container */
+        .logo-text-v2 {
+            font-family: 'Cairo', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 900;
+            letter-spacing: 5px;
+            position: relative;
+            z-index: 10;
+            margin: 0;
+            line-height: 1;
+            display: flex;
+            flex-direction: row;
+            /* Standard row for LTR ordering */
+            direction: ltr;
+            /* Force Left-to-Right layout */
+            /* Aligns spans in a row */
+            gap: 5px;
+        }
+
+        /* Individual Letters R M G */
+        .logo-text-v2 span {
+            opacity: 0;
+            color: #D4AF37;
+            display: inline-block;
+        }
+
+        /* Sequential Animations */
+        /* R: First to appear, Last to leave */
+        .logo-text-v2 span:nth-child(1) {
+            animation: reveal-first 5s infinite;
+        }
+
+        /* M: Middle appear, Middle leave */
+        .logo-text-v2 span:nth-child(2) {
+            animation: reveal-middle 5s infinite;
+        }
+
+        /* G: Last appear, First to leave */
+        .logo-text-v2 span:nth-child(3) {
+            animation: reveal-last 5s infinite;
+        }
+
+        .logo-subtext-v2 {
+            font-family: 'Amiri', serif;
+            font-size: 1.2rem;
+            color: #D4AF37;
+            letter-spacing: 8px;
+            margin-top: 15px;
+            opacity: 0;
+            transform: translateY(10px);
+            /* Subtext fades in after letters start appearing, then fades out */
+            animation: subtext-cycle 5s infinite;
+            text-transform: uppercase;
+        }
+
+        /* Animations Keyframes */
+
+
+
+        /* R M G Reveal Logic */
+        /* R M G Unique Reveal Logics */
+
+        /* R: Appear at 0s, Disappear at 4s */
+        @keyframes reveal-first {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+                color: #444;
+            }
+
+            5% {
+                opacity: 1;
+                transform: scale(1.1);
+                color: #fff;
+                text-shadow: 0 0 20px #F3D778;
+            }
+
+            10% {
+                transform: scale(1);
+                color: #D4AF37;
+                text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            }
+
+            80% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            85% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* M: Appear at 0.5s, Disappear at 3.5s */
+        @keyframes reveal-middle {
+            0% {
+                opacity: 0;
+            }
+
+            9% {
+                opacity: 0;
+                transform: scale(0.8);
+                color: #444;
+            }
+
+            14% {
+                opacity: 1;
+                transform: scale(1.1);
+                color: #fff;
+                text-shadow: 0 0 20px #F3D778;
+            }
+
+            19% {
+                transform: scale(1);
+                color: #D4AF37;
+                text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            }
+
+            71% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            76% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* G: Appear at 1.0s, Disappear at 3.0s */
+        @keyframes reveal-last {
+            0% {
+                opacity: 0;
+            }
+
+            19% {
+                opacity: 0;
+                transform: scale(0.8);
+                color: #444;
+            }
+
+            24% {
+                opacity: 1;
+                transform: scale(1.1);
+                color: #fff;
+                text-shadow: 0 0 20px #F3D778;
+            }
+
+            29% {
+                transform: scale(1);
+                color: #D4AF37;
+                text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            }
+
+            62% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            67% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes subtext-cycle {
+
+            0%,
+            25% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            35% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            60% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            75% {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
 
     <!-- Preloader -->
-    <div id="preloader"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0A0A0A; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s ease;">
-        <div class="loader-content" style="text-align: center;">
-            <div class="spinner"
-                style="width: 50px; height: 50px; border: 3px solid rgba(212, 175, 55, 0.3); border-top-color: #D4AF37; border-radius: 50%; animation: spin 1s linear infinite;">
-            </div>
-            <p style="color: #D4AF37; margin-top: 15px; font-family: 'Cairo', sans-serif; letter-spacing: 2px;">RMG
-                DECOR</p>
+    <!-- Preloader / Light Animation V2 -->
+    <div id="preloader" class="preloader-v2">
+        <div class="logo-container-v2">
+            <h1 class="logo-text-v2" dir="ltr">
+                <span>R</span><span>M</span><span>G</span>
+            </h1>
+            <p class="logo-subtext-v2">DECOR</p>
         </div>
     </div>
 
@@ -60,13 +295,7 @@
         </div>
     </div>
 
-    <style>
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-    </style>
+
 
     <!-- Navigation -->
     <nav class="navbar" id="main-nav">
@@ -180,23 +409,28 @@
         const hidePreloader = () => {
             const preloader = document.getElementById('preloader');
             if (preloader && preloader.style.visibility !== 'hidden') {
-                preloader.style.opacity = '0';
-                preloader.style.visibility = 'hidden';
-
-                // Show Welcome Modal after preloader
+                // Force a minimum display time of 2.5 seconds to see the animation
                 setTimeout(() => {
-                    const modal = document.getElementById('islamic-welcome-modal');
-                    if (modal && !sessionStorage.getItem('welcomeShown')) {
-                        modal.classList.add('active');
-                        sessionStorage.setItem('welcomeShown', 'true');
-                    }
-                }, 500);
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+
+                    // Show Welcome Modal after preloader
+                    setTimeout(() => {
+                        const modal = document.getElementById('islamic-welcome-modal');
+                        if (modal && !sessionStorage.getItem('welcomeShown')) {
+                            modal.classList.add('active');
+                            sessionStorage.setItem('welcomeShown', 'true');
+                        }
+                    }, 500);
+                }, 2500); // 2.5s Minimum Delay
             }
         };
 
+        // We only start the hiding process after load, but the function above has the enforced delay.
         window.addEventListener('load', hidePreloader);
-        // Fallback: hide preloader after 3 seconds anyway
-        setTimeout(hidePreloader, 3000);
+
+        // Fallback safety
+        setTimeout(hidePreloader, 6000);
 
 
 
