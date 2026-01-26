@@ -26,7 +26,7 @@ We have visually upgraded the application to reflect a "Premium & Professional" 
     *   Contact Info with Icons.
 *   **Homepage (`home.html`)**:
     *   **Stats Section**: Added a dynamic grid showing "30+ Years Experience", "100% Satisfaction", etc.
-    *   **Why Choose Us**: Added a dedicated section highlighting Quality, Punctuality, and Professional Team.
+    *   **Why Choose Us**: Upgraded to "Premium Dark" theme with deep glassmorphism, animated golden borders, floating hover effects, and rotating icon rings.
 
 ### 4. Technical Details
 *   **CSS Variables**: centralized in `:root` for easy maintenance.

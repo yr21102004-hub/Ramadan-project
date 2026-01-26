@@ -30,7 +30,7 @@
                     style="color: var(--primary); font-size: 1.3rem; font-weight: bold; letter-spacing: 3px;">{{ secret }}</code>
             </div>
 
-            <form action="{{ url_for('toggle_2fa') }}" method="POST">
+            <form action="{{ url_for('admin.toggle_2fa') }}" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 {% if current_user.two_factor_enabled %}
                 <input type="hidden" name="action" value="disable">
@@ -46,7 +46,8 @@
             </form>
 
             <div class="mt-4">
-                <a href="{{ url_for('admin') }}" class="text-muted small text-decoration-none hover-gold transition">
+                <a href="{{ url_for('admin.admin_dashboard') }}"
+                    class="text-muted small text-decoration-none hover-gold transition">
                     <i class="fas fa-arrow-right me-1"></i> العودة للوحة الإدارة
                 </a>
             </div>

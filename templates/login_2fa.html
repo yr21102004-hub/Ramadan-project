@@ -18,8 +18,8 @@
             {% endif %}
             {% endwith %}
 
-            <form action="{{ url_for('login_2fa') }}" method="POST">
-                
+            <form action="{{ url_for('auth.verify_2fa') }}" method="POST">
+
 
                 <div class="form-group">
                     <input type="text" name="token" required placeholder="000 000" maxlength="6"
@@ -30,7 +30,7 @@
             </form>
 
             <div class="text-center" style="margin-top: 20px;">
-                <a href="{{ url_for('logout') }}" style="color: #aaa;">إلغاء</a>
+                <a href="{{ url_for('auth.logout') }}" style="color: #aaa;">إلغاء</a>
             </div>
         </div>
     </div>

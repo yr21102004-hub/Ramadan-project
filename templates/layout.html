@@ -448,12 +448,16 @@
     <!-- AOS Initialization -->
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
-        AOS.init({
-            duration: 1000,
-            once: true,
-            offset: 100,
-            easing: 'ease-out-back'
-        });
+        // AOS Configuration - Initted later
+        const initAOS = () => {
+            AOS.init({
+                duration: 1000,
+                once: false, // Changed to false to allow re-animation (more dynamic)
+                mirror: true,
+                offset: 50,
+                easing: 'ease-out-cubic' // Smoother easing
+            });
+        };
 
         // Preloader Logic
         const hidePreloader = () => {
@@ -464,15 +468,21 @@
                     preloader.style.opacity = '0';
                     preloader.style.visibility = 'hidden';
 
-                    // Show Welcome Modal after preloader
+                    // Initialize Animations NOW so they play as the page is revealed
+                    initAOS();
+
+                    // Show Welcome Modal after preloader (if needed)
                     setTimeout(() => {
                         const modal = document.getElementById('islamic-welcome-modal');
                         if (modal && !sessionStorage.getItem('welcomeShown')) {
-                            modal.classList.add('active');
-                            sessionStorage.setItem('welcomeShown', 'true');
+                            // modal.classList.add('active'); // Optional: Uncomment to re-enable welcome modal
+                            // sessionStorage.setItem('welcomeShown', 'true');
                         }
                     }, 500);
                 }, 2500); // 2.5s Minimum Delay
+            } else {
+                // If preloader already hidden/gone, init AOS immediately
+                initAOS();
             }
         };
 

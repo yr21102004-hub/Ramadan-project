@@ -775,6 +775,170 @@ h6 {
     font-weight: 600;
 }
 
+/* start Why Choose Us Section - UI Upgrade */
+.section-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: -1rem auto 4rem auto;
+    line-height: 1.8;
+    position: relative;
+    z-index: 2;
+}
+
+.why-us-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 40px;
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.why-us-card {
+    background: linear-gradient(145deg, rgba(30, 30, 30, 0.6), rgba(20, 20, 20, 0.8));
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 60px 40px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.why-us-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    opacity: 0;
+    transition: 0.4s;
+}
+
+.why-us-card:hover {
+    transform: translateY(-15px);
+    background: linear-gradient(145deg, rgba(40, 40, 40, 0.8), rgba(25, 25, 25, 0.9));
+    border-color: rgba(212, 175, 55, 0.3);
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+.why-us-card:hover::before {
+    opacity: 1;
+}
+
+.card-icon-wrapper {
+    position: relative;
+    margin-bottom: 35px;
+    display: inline-block;
+}
+
+.card-icon {
+    width: 100px;
+    height: 100px;
+    background: rgba(212, 175, 55, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: var(--primary);
+    transition: 0.4s;
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    position: relative;
+    z-index: 2;
+}
+
+.card-icon::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.why-us-card:hover .card-icon {
+    background: var(--primary);
+    color: #000;
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+    border-color: transparent;
+}
+
+.why-us-card:hover .card-icon::after {
+    border-color: rgba(255, 255, 255, 0.3);
+    animation-duration: 5s;
+}
+
+.why-us-card h3 {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #fff;
+    transition: 0.3s;
+}
+
+.why-us-card:hover h3 {
+    color: var(--primary);
+}
+
+.why-us-card p {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.8;
+    margin: 0;
+}
+
+/* Background Decoration for the Section */
+#why-us {
+    position: relative;
+}
+
+#why-us::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+    top: -100px;
+    right: -100px;
+    pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .why-us-grid-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .why-us-card {
+        padding: 40px 20px;
+    }
+}
+
+/* end Why Choose Us Section - UI Upgrade */
+
 /* Reviews */
 .reviews-grid {
     display: grid;
@@ -1346,3 +1510,4 @@ footer::before {
 .log-severity-high .text-gold {
     color: #F44336 !important;
 }
+
